@@ -28,7 +28,6 @@ export default function RiskPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const classId = searchParams.get("class_id") || "";
-  const term = searchParams.get("term") || "Term 1 2025";
 
   const [teacher, setTeacher] = useState<any>(null);
   const [ruleRisks, setRuleRisks] = useState<RiskFlag[]>([]);
@@ -37,6 +36,7 @@ export default function RiskPage() {
   const [message, setMessage] = useState("");
   const [selectedClass, setSelectedClass] = useState(classId);
   const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
+  const [term, setTerm] = useState(searchParams.get("term") || "Term 1 2025");
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -115,7 +115,7 @@ export default function RiskPage() {
             <input
               type="text"
               value={term}
-              onChange={(e) => setTerm(e.target.value)}
+            onChange={(e) => setTerm(e.target.value)}
               className="w-full border rounded-lg p-2 text-sm"
             />
           </div>
