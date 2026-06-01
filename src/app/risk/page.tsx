@@ -1,7 +1,6 @@
 "use client";
-// fixed
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 
@@ -25,7 +24,7 @@ interface MLRiskStudent {
   overall_risk: number;
 }
 
-export default function RiskPage() {
+function RiskContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const classId = searchParams.get("class_id") || "";
@@ -48,7 +47,6 @@ export default function RiskPage() {
     const t = JSON.parse(stored);
     setTeacher(t);
 
-    // Fetch classes for the school
     api.get(`/schools/${t.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
       if (!classId && res.data.length > 0) {
@@ -64,11 +62,9 @@ export default function RiskPage() {
     setLoading(true);
     setMessage("");
     try {
-      // Fetch rule-based risks
       const ruleRes = await api.get(`/risk/class/${cid}?term=${encodeURIComponent(t)}`);
       setRuleRisks(ruleRes.data || []);
 
-      // Fetch ML risks silently
       try {
         const mlRes = await api.get(`/ml-risk/class/${cid}?term=${encodeURIComponent(t)}`);
         setMlRisks(mlRes.data.students || []);
@@ -116,7 +112,7 @@ export default function RiskPage() {
             <input
               type="text"
               value={term}
-            onChange={(e) => setTerm(e.target.value)}
+              onChange={(e) => setTerm(e.target.value)}
               className="w-full border rounded-lg p-2 text-sm"
             />
           </div>
@@ -194,5 +190,13 @@ export default function RiskPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function RiskPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading risk data…</div>}>
+      <RiskContent />
+    </Suspense>
   );
 }
