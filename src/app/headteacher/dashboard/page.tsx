@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import dynamic from "next/dynamic";
 import StudentSearch from "@/components/StudentSearch";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -43,7 +44,7 @@ export default function HeadteacherDashboardPage() {
 
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
-
+  const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -155,6 +156,14 @@ export default function HeadteacherDashboardPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-800">Headteacher Dashboard</h1>
           <p className="text-sm text-gray-500">{teacher.school_name}</p>
+          {teacher.is_premium && teacher.slug && (
+            <div className="flex items-center gap-2 mt-1">
+              {teacher.logo_url && (
+                <img src={teacher.logo_url} alt="Logo" className="h-8 w-8 rounded-full" />
+              )}
+              <span className="text-xs text-blue-600 font-mono">{teacher.slug}.ar-learn.com</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <StudentSearch />
@@ -165,7 +174,7 @@ export default function HeadteacherDashboardPage() {
               onClick={() => setShowExportMenu(!showExportMenu)}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
             >
-              📥 Export
+              Export
             </button>
             {showExportMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50">
@@ -313,7 +322,10 @@ export default function HeadteacherDashboardPage() {
               <p className="text-2xl font-bold text-red-600">{data.risk_student_count}</p>
             </div>
           </div>
-
+          {/* Premium Charts – only visible when is_premium is true */}
+          {teacher.is_premium && (
+            <PremiumCharts schoolId={teacher.school_id} term={term} />
+          )}
           {/* Best / Worst Class & Subject */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl shadow-sm">

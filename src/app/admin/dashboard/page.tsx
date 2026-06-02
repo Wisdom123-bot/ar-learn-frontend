@@ -11,6 +11,7 @@ interface School {
   student_count: number;
   teacher_count: number;
   is_active: boolean;
+  is_premium: boolean;
   created_at: string;
 }
 
@@ -51,6 +52,27 @@ export default function AdminDashboardPage() {
   const [schoolDetails, setSchoolDetails] = useState<SchoolDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
+  // Branding editing
+  const [editingBranding, setEditingBranding] = useState<string | null>(null);
+  const [brandSlug, setBrandSlug] = useState("");
+  const [brandLogo, setBrandLogo] = useState("");
+  const [brandMessage, setBrandMessage] = useState("");
+
+  const handleUpdateBranding = async (schoolId: string) => {
+    try {
+      await api.put(`/admin/schools/${schoolId}/branding`, {
+        slug: brandSlug,
+        logo_url: brandLogo,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBrandMessage("Branding updated.");
+      setEditingBranding(null);
+    } catch (err: any) {
+      setBrandMessage("Failed to update branding.");
+    }
+  };
+
   useEffect(() => {
     const stored = localStorage.getItem("admin_token");
     if (!stored) {
@@ -74,6 +96,20 @@ export default function AdminDashboardPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePremium = async (schoolId: string, activate: boolean) => {
+    try {
+      await api.put(`/admin/schools/${schoolId}/premium?premium=${activate}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSchools((prev) =>
+        prev.map((s) => (s.id === schoolId ? { ...s, is_premium: activate } : s))
+      );
+      setMessage(`Premium ${activate ? "activated" : "deactivated"} for school.`);
+    } catch (err: any) {
+      setMessage("Failed to toggle premium.");
     }
   };
 
@@ -219,6 +255,9 @@ export default function AdminDashboardPage() {
                     {!school.is_active && (
                       <span className="px-2 py-0.5 bg-red-900 text-red-300 text-xs rounded-full">Suspended</span>
                     )}
+                    {school.is_premium && (
+                      <span className="px-2 py-0.5 bg-purple-900 text-purple-300 text-xs rounded-full">Premium</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-400">
                     {school.county} · {school.student_count} students · {school.teacher_count} teachers
@@ -227,7 +266,7 @@ export default function AdminDashboardPage() {
                     Joined: {new Date(school.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => toggleDetails(school.id)}
                     className="px-3 py-1.5 text-sm rounded-lg font-medium bg-gray-700 text-gray-200 hover:bg-gray-600"
@@ -241,6 +280,25 @@ export default function AdminDashboardPage() {
                     {school.is_active ? "Suspend" : "Reactivate"}
                   </button>
                   <button
+                    onClick={() => handlePremium(school.id, !school.is_premium)}
+                    className={`px-3 py-1.5 text-sm rounded-lg font-medium ${school.is_premium ? "bg-purple-700 text-purple-200 hover:bg-purple-600" : "bg-gray-700 text-gray-200 hover:bg-gray-600"}`}
+                  >
+                    {school.is_premium ? "Deactivate Premium" : "Activate Premium"}
+                  </button>
+                  {school.is_premium && (
+                    <button
+                      onClick={() => {
+                        setEditingBranding(editingBranding === school.id ? null : school.id);
+                        setBrandSlug("");
+                        setBrandLogo("");
+                        setBrandMessage("");
+                      }}
+                      className="px-3 py-1.5 text-sm rounded-lg font-medium bg-teal-700 text-teal-200 hover:bg-teal-600"
+                    >
+                      {editingBranding === school.id ? "Cancel Branding" : "Branding"}
+                    </button>
+                  )}
+                  <button
                     onClick={() => handleDelete(school.id, school.name)}
                     className="px-3 py-1.5 text-sm bg-red-700 text-red-200 rounded-lg font-medium hover:bg-red-600"
                   >
@@ -248,6 +306,44 @@ export default function AdminDashboardPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Branding edit form */}
+              {editingBranding === school.id && (
+                <div className="mt-4 p-4 bg-gray-750 rounded-lg border border-gray-600">
+                  <h4 className="text-sm font-semibold mb-3">Custom Branding</h4>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Slug (e.g. my-school)"
+                      value={brandSlug}
+                      onChange={(e) => setBrandSlug(e.target.value)}
+                      className="flex-1 p-2 bg-gray-700 border border-gray-500 rounded text-white text-sm"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Logo URL"
+                      value={brandLogo}
+                      onChange={(e) => setBrandLogo(e.target.value)}
+                      className="flex-1 p-2 bg-gray-700 border border-gray-500 rounded text-white text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleUpdateBranding(school.id)}
+                      className="px-3 py-1 bg-green-600 text-white rounded text-xs font-medium"
+                    >
+                      Save Branding
+                    </button>
+                    <button
+                      onClick={() => setEditingBranding(null)}
+                      className="px-3 py-1 bg-gray-600 text-white rounded text-xs font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {brandMessage && <p className="text-xs text-green-400 mt-2">{brandMessage}</p>}
+                </div>
+              )}
 
               {/* Expanded Details Panel */}
               {expandedSchool === school.id && (
