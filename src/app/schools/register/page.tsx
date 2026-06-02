@@ -161,13 +161,13 @@ export default function SchoolRegistrationPage() {
 
         {success ? (
           <div className="bg-white p-6 rounded-2xl shadow-lg text-center space-y-4">
-            <h2 className="text-lg font-semibold text-green-600">✅ Registration Successful</h2>
+            <h2 className="text-lg font-semibold text-green-600"> Registration Successful</h2>
 
             {/* Headteacher code */}
             {headteacherCode && (
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-sm font-medium text-blue-800">Headteacher</p>
-                <p className="font-mono text-sm">{headteacherCode}</p>
+                <p className="font-mono text-sm text-gray-900">{headteacherCode}</p>
               </div>
             )}
 
@@ -175,17 +175,17 @@ export default function SchoolRegistrationPage() {
             {deanCode && (
               <div className="bg-purple-50 p-3 rounded-lg">
                 <p className="text-sm font-medium text-purple-800">Dean of Students</p>
-                <p className="font-mono text-sm">{deanCode}</p>
+                <p className="font-mono text-sm text-gray-900">{deanCode}</p>
               </div>
             )}
 
             {/* Teacher codes */}
             {teacherCodes.length > 0 && (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Teachers</p>
+                <p className="text-sm text-gray-800 mb-2 font-medium">Teachers</p>
                 <ul className="bg-gray-100 p-3 rounded-lg text-left space-y-1 text-sm">
                   {teacherCodes.map((code, i) => (
-                    <li key={i} className="font-mono">{code}</li>
+                    <li key={i} className="font-mono text-gray-900">{code}</li>
                   ))}
                 </ul>
               </div>
@@ -193,15 +193,15 @@ export default function SchoolRegistrationPage() {
 
             {/* PDF Upload */}
             <div className="border-t pt-4 mt-4">
-              <h3 className="font-semibold text-gray-700 mb-2">Upload Student Lists (PDF)</h3>
-              <p className="text-xs text-gray-500 mb-3">
+              <h3 className="font-semibold text-gray-800 mb-2">Upload Student Lists (PDF)</h3>
+              <p className="text-xs text-gray-600 mb-3">
                 For each class, upload a PDF with student names. Access codes will be generated automatically.
               </p>
               <div className="text-left space-y-2">
                 <select
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
-                  className="w-full border rounded-lg p-2 text-sm"
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900"
                 >
                   <option value="">Select class</option>
                   {registeredClasses.map((c) => (
@@ -212,7 +212,7 @@ export default function SchoolRegistrationPage() {
                   type="file"
                   accept=".pdf"
                   onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm"
+                  className="w-full text-sm text-gray-900"
                 />
                 <button
                   onClick={handleUploadStudents}
@@ -235,49 +235,49 @@ export default function SchoolRegistrationPage() {
             >
               Go to Login
             </button>
-            <p className="text-xs text-gray-400">School ID: {schoolId}</p>
+            <p className="text-xs text-gray-500">School ID: {schoolId}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-lg space-y-4">
             {/* School Info */}
             <div>
-              <label className="block text-sm font-medium mb-1">School Name</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">School Name</label>
               <input
                 type="text"
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">County</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">County</label>
               <input
                 type="text"
                 value={county}
                 onChange={(e) => setCounty(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                 required
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Estimated Students</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Estimated Students</label>
                 <input
                   type="number"
                   value={studentCount}
                   onChange={(e) => setStudentCount(e.target.value)}
-                  className="w-full border rounded-lg p-2 text-sm"
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900"
                   min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Number of Teachers</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Number of Teachers</label>
                 <input
                   type="number"
                   value={teacherCount}
                   onChange={(e) => setTeacherCount(e.target.value)}
-                  className="w-full border rounded-lg p-2 text-sm"
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900"
                   min="0"
                 />
               </div>
@@ -286,23 +286,23 @@ export default function SchoolRegistrationPage() {
             {/* Headteacher & Dean */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Headteacher Name (optional)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Headteacher Name (optional)</label>
                 <input
                   type="text"
                   value={headteacherName}
                   onChange={(e) => setHeadteacherName(e.target.value)}
                   placeholder="e.g. Mr. Otieno"
-                  className="w-full border rounded-lg p-2 text-sm"
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Dean of Students (optional)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Dean of Students (optional)</label>
                 <input
                   type="text"
                   value={deanName}
                   onChange={(e) => setDeanName(e.target.value)}
                   placeholder="e.g. Ms. Wanjiku"
-                  className="w-full border rounded-lg p-2 text-sm"
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -310,7 +310,7 @@ export default function SchoolRegistrationPage() {
             {/* Teacher Names (Dynamic Table) */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium">Teacher Names</label>
+                <label className="block text-sm font-medium text-gray-900">Teacher Names</label>
                 <button type="button" onClick={addTeacherRow} className="text-xs text-blue-600 font-medium">
                   + Add Teacher
                 </button>
@@ -322,7 +322,7 @@ export default function SchoolRegistrationPage() {
                     value={name}
                     onChange={(e) => updateTeacherName(idx, e.target.value)}
                     placeholder="e.g. Alice Wambui"
-                    className="flex-1 border rounded-lg p-2 text-sm"
+                    className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                     required
                   />
                   {teacherNames.length > 1 && (
@@ -335,7 +335,7 @@ export default function SchoolRegistrationPage() {
             {/* Classes */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium">Classes</label>
+                <label className="block text-sm font-medium text-gray-900">Classes</label>
                 <button type="button" onClick={addClassRow} className="text-xs text-blue-600 font-medium">
                   + Add Class
                 </button>
@@ -347,7 +347,7 @@ export default function SchoolRegistrationPage() {
                     value={cls.name}
                     onChange={(e) => updateClass(idx, "name", e.target.value)}
                     placeholder="e.g. Grade 1 Orange"
-                    className="flex-1 border rounded-lg p-2 text-sm"
+                    className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                     required
                   />
                   <input
@@ -355,7 +355,7 @@ export default function SchoolRegistrationPage() {
                     value={cls.target_mean_score}
                     onChange={(e) => updateClass(idx, "target_mean_score", e.target.value)}
                     placeholder="Target %"
-                    className="w-20 border rounded-lg p-2 text-sm"
+                    className="w-20 border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                     step="0.1"
                     min="0"
                     max="100"
