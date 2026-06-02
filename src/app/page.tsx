@@ -42,7 +42,14 @@ export default function HomePage() {
             href="/about"
             className="block w-full py-3 border border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition"
           >
-            ℹ️ About Ar‑Learn
+            About Ar‑Learn
+          </Link>
+
+          <Link
+            href="/contact"
+            className="block w-full py-3 border border-gray-400 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
+          >
+             Contact Us
           </Link>
         </div>
 
