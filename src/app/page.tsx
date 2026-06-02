@@ -37,6 +37,13 @@ export default function HomePage() {
           >
              Admin Panel
           </Link>
+
+          <Link
+            href="/about"
+            className="block w-full py-3 border border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition"
+          >
+            ℹ️ About Ar‑Learn
+          </Link>
         </div>
 
         <p className="text-xs text-gray-400 mt-6">
