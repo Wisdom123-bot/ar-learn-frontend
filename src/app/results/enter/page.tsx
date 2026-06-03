@@ -36,6 +36,7 @@ export default function EnterResultsPage() {
   const [academicYear, setAcademicYear] = useState("2025");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -45,19 +46,16 @@ export default function EnterResultsPage() {
     }
     const t = JSON.parse(stored);
     setTeacher(t);
-    // Fetch teacher’s assignments (class‑subject pairs)
     api.get(`/teachers/${t.teacher_id}/assignments`).then((res) => {
       setAssignments(res.data);
       if (res.data.length > 0) setSelectedAssignment(res.data[0]);
     }).catch(console.error);
   }, [router]);
 
-  // When assignment changes, fetch students of that class
   useEffect(() => {
-    if (!selectedAssignment) return;
+    if (!selectedAssignment || !teacher) return;
     api.get(`/teachers/${teacher.teacher_id}/students`)
       .then((res) => {
-        // Filter students belonging to the selected class
         const classStudents = res.data.filter((s: any) => s.class_id === selectedAssignment.class_id);
         setStudents(classStudents);
         setResults(
@@ -70,6 +68,13 @@ export default function EnterResultsPage() {
       })
       .catch(console.error);
   }, [selectedAssignment, teacher]);
+
+  // Filter students based on search query (name or admission number)
+  const filteredStudents = students.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleScoreChange = (studentId: string, value: string) => {
     setResults((prev) =>
@@ -88,11 +93,20 @@ export default function EnterResultsPage() {
     if (!selectedAssignment) return;
     setLoading(true);
     setMessage("");
+
+    // Only include rows where a score is entered
+    const filledResults = results.filter((r) => r.score.trim() !== "");
+    if (filledResults.length === 0) {
+      setMessage("Please enter at least one score.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       teacher_id: teacher.teacher_id,
       term,
       academic_year: academicYear,
-      results: results.map((r) => ({
+      results: filledResults.map((r) => ({
         student_id: r.student_id,
         subject_id: selectedAssignment.subject_id,
         class_id: selectedAssignment.class_id,
@@ -114,21 +128,21 @@ export default function EnterResultsPage() {
   if (!teacher) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-4 text-black">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-gray-500">
+        <button onClick={() => router.back()} className="text-black font-medium">
           ← Back
         </button>
-        <h1 className="text-xl font-bold text-gray-800">Enter Results</h1>
+        <h1 className="text-xl font-bold text-black">Enter Results</h1>
       </div>
 
       {/* Selector: Class & Subject */}
       <div className="bg-white p-4 rounded-xl shadow-sm mb-4 space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Class & Subject</label>
+          <label className="block text-sm font-medium text-black mb-1">Class & Subject</label>
           <select
-            className="w-full border rounded-lg p-2 text-sm"
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
             value={selectedAssignment ? `${selectedAssignment.class_id}|${selectedAssignment.subject_id}` : ""}
             onChange={(e) => {
               const [class_id, subject_id] = e.target.value.split("|");
@@ -139,10 +153,7 @@ export default function EnterResultsPage() {
             }}
           >
             {assignments.map((a) => (
-              <option
-                key={`${a.class_id}|${a.subject_id}`}
-                value={`${a.class_id}|${a.subject_id}`}
-              >
+              <option key={`${a.class_id}|${a.subject_id}`} value={`${a.class_id}|${a.subject_id}`}>
                 {a.class_name} – {a.subject_name}
               </option>
             ))}
@@ -151,67 +162,80 @@ export default function EnterResultsPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Exam Type</label>
+            <label className="block text-sm font-medium text-black mb-1">Exam Type</label>
             <select
               value={examType}
               onChange={(e) => setExamType(e.target.value)}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
             >
               <option value="CAT">CAT</option>
               <option value="EXAM">EXAM</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Term</label>
+            <label className="block text-sm font-medium text-black mb-1">Term</label>
             <input
               type="text"
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
               placeholder="e.g. Term 1 2025"
             />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Academic Year</label>
+          <label className="block text-sm font-medium text-black mb-1">Academic Year</label>
           <input
             type="text"
             value={academicYear}
             onChange={(e) => setAcademicYear(e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
             placeholder="2025"
+          />
+        </div>
+
+        {/* Search Student */}
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">Search Student</label>
+          <input
+            type="text"
+            placeholder="Type name or admission number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
           />
         </div>
       </div>
 
       {/* Students Table */}
-      {students.length > 0 ? (
+      {filteredStudents.length > 0 ? (
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 sticky top-0">
                   <tr>
-                    <th className="text-left p-2 font-medium">Student</th>
-                    <th className="w-20 p-2 font-medium">Score</th>
-                    <th className="w-40 p-2 font-medium">Remarks</th>
+                    <th className="text-left p-2 font-medium text-black">Student</th>
+                    <th className="w-20 p-2 font-medium text-black">Score</th>
+                    <th className="w-40 p-2 font-medium text-black">Remarks</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {results.map((r, idx) => {
-                    const student = students.find((s) => s.id === r.student_id);
+                  {filteredStudents.map((student) => {
+                    const resultRow = results.find((r) => r.student_id === student.id);
+                    if (!resultRow) return null;
                     return (
-                      <tr key={r.student_id} className="border-t">
+                      <tr key={student.id} className="border-t">
                         <td className="p-2">
-                          <p className="font-medium">{student?.name}</p>
-                          <p className="text-xs text-gray-400">{student?.admission_number}</p>
+                          <p className="font-medium text-black">{student.name}</p>
+                          <p className="text-xs text-black">{student.admission_number}</p>
                         </td>
                         <td className="p-2">
                           <input
                             type="number"
-                            value={r.score}
-                            onChange={(e) => handleScoreChange(r.student_id, e.target.value)}
-                            className="w-full border rounded-lg p-1.5 text-center text-sm"
+                            value={resultRow.score}
+                            onChange={(e) => handleScoreChange(student.id, e.target.value)}
+                            className="w-full border border-gray-500 rounded-lg p-1.5 text-center text-sm text-black"
                             min="0"
                             max="100"
                             placeholder="0"
@@ -220,9 +244,9 @@ export default function EnterResultsPage() {
                         <td className="p-2">
                           <input
                             type="text"
-                            value={r.remarks}
-                            onChange={(e) => handleRemarksChange(r.student_id, e.target.value)}
-                            className="w-full border rounded-lg p-1.5 text-sm"
+                            value={resultRow.remarks}
+                            onChange={(e) => handleRemarksChange(student.id, e.target.value)}
+                            className="w-full border border-gray-500 rounded-lg p-1.5 text-sm text-black placeholder-gray-400"
                             placeholder="Optional"
                           />
                         </td>
@@ -235,7 +259,9 @@ export default function EnterResultsPage() {
           </div>
 
           {message && (
-            <div className={`p-3 rounded-lg mb-4 text-sm ${message.includes("failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+            <div className={`p-3 rounded-lg mb-4 text-sm ${
+              message.toLowerCase().includes("failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
+            }`}>
               {message}
             </div>
           )}
@@ -249,8 +275,8 @@ export default function EnterResultsPage() {
           </button>
         </form>
       ) : (
-        <p className="text-center text-gray-400 py-10">
-          No students in this class.
+        <p className="text-center text-black py-10">
+          {students.length === 0 ? "No students in this class." : "No students match your search."}
         </p>
       )}
     </div>
