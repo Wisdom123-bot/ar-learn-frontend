@@ -103,21 +103,21 @@ export default function UnifiedLoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h1 className="text-2xl font-bold text-center text-black mb-6">
           Ar‑Learn Login
         </h1>
 
         {/* STEP 1: School selection */}
         {!selectedSchool ? (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Find your school</p>
+            <p className="text-sm text-black">Find your school</p>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={schoolQuery}
                 onChange={(e) => setSchoolQuery(e.target.value)}
                 placeholder="Enter school name"
-                className="flex-1 border rounded-lg p-2 text-sm"
+                className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <button
@@ -134,23 +134,23 @@ export default function UnifiedLoginPage() {
                   <button
                     key={s.id}
                     onClick={() => handleSelectSchool(s)}
-                    className="w-full text-left p-3 border rounded-lg hover:bg-blue-50"
+                    className="w-full text-left p-3 border border-gray-500 rounded-lg hover:bg-blue-50"
                   >
-                    <p className="font-medium">{s.name}</p>
-                    <p className="text-xs text-gray-500">{s.county}</p>
+                    <p className="font-medium text-black">{s.name}</p>
+                    <p className="text-xs text-black">{s.county}</p>
                   </button>
                 ))}
               </div>
             )}
-            {searching && <p className="text-sm text-gray-400">Searching...</p>}
+            {searching && <p className="text-sm text-black">Searching...</p>}
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Selected school</p>
-                <p className="font-semibold">{selectedSchool.name}</p>
-                <p className="text-xs text-gray-400">{selectedSchool.county}</p>
+                <p className="text-sm text-black">Selected school</p>
+                <p className="font-semibold text-black">{selectedSchool.name}</p>
+                <p className="text-xs text-black">{selectedSchool.county}</p>
               </div>
               <button
                 onClick={handleBackToSchool}
@@ -163,13 +163,13 @@ export default function UnifiedLoginPage() {
             {/* STEP 2: Role selection */}
             {!selectedRole ? (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Select your role</p>
+                <p className="text-sm text-black mb-2">Select your role</p>
                 <div className="space-y-2">
                   {ROLES.map((r) => (
                     <button
                       key={r.value}
                       onClick={() => setSelectedRole(r.value)}
-                      className="w-full p-3 border rounded-lg text-left hover:bg-blue-50"
+                      className="w-full p-3 border border-gray-500 rounded-lg text-left text-black hover:bg-blue-50"
                     >
                       {r.label}
                     </button>
@@ -180,10 +180,10 @@ export default function UnifiedLoginPage() {
               /* STEP 3: Enter teacher code */
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    Logging in as <span className="font-medium">{selectedRole}</span>
+                  <p className="text-sm text-black mb-1">
+                    Logging in as <span className="font-medium text-black">{selectedRole}</span>
                   </p>
-                  <label className="block text-xs font-medium mb-1">
+                  <label className="block text-xs font-medium text-black mb-1">
                     Teacher Code
                   </label>
                   <input
@@ -191,7 +191,7 @@ export default function UnifiedLoginPage() {
                     value={teacherCode}
                     onChange={(e) => setTeacherCode(e.target.value)}
                     placeholder="e.g. ALI1234"
-                    className="w-full border rounded-lg p-2 text-lg tracking-widest uppercase"
+                    className="w-full border border-gray-500 rounded-lg p-2 text-lg tracking-widest uppercase text-black placeholder-gray-400"
                     autoFocus
                   />
                 </div>
@@ -213,7 +213,7 @@ export default function UnifiedLoginPage() {
                 <button
                   type="button"
                   onClick={() => { setSelectedRole(""); setTeacherCode(""); setError(""); }}
-                  className="w-full text-sm text-gray-500"
+                  className="w-full text-sm text-black"
                 >
                   ← Choose a different role
                 </button>
