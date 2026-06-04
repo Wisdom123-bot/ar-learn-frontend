@@ -12,6 +12,8 @@ interface School {
   teacher_count: number;
   is_active: boolean;
   is_premium: boolean;
+  email: string;
+  phone: string;
   created_at: string;
 }
 
@@ -210,6 +212,12 @@ export default function AdminDashboardPage() {
             {showChangePw ? "Cancel" : "Change Password"}
           </button>
           <button
+  onClick={() => router.push("/admin/send-email")}
+  className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+>
+  Send Update
+</button>
+          <button
             onClick={() => { setShowBanned(!showBanned); if (!showBanned) fetchBannedIps(); }}
             className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
           >
@@ -343,6 +351,12 @@ export default function AdminDashboardPage() {
                   >
                     {school.is_active ? "Suspend" : "Reactivate"}
                   </button>
+                  <p className="text-sm text-gray-400">
+  {school.county} · {school.student_count} students · {school.teacher_count} teachers
+</p>
+{school.email && (
+  <p className="text-xs text-gray-500">{school.email} · {school.phone}</p>
+)}
                   <button
                     onClick={() => handlePremium(school.id, !school.is_premium)}
                     className={`px-3 py-1.5 text-sm rounded-lg font-medium ${school.is_premium ? "bg-purple-700 text-purple-200 hover:bg-purple-600" : "bg-gray-700 text-gray-200 hover:bg-gray-600"}`}
