@@ -27,6 +27,11 @@ export default function FeesPage() {
   const [message, setMessage] = useState("");
   const [term, setTerm] = useState("Term 1 2025");
 
+  // Editing fields
+  const [newBalance, setNewBalance] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -60,6 +65,46 @@ export default function FeesPage() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateBalance = async () => {
+    if (!feeStudent || !newBalance.trim()) return;
+    setActionLoading(true);
+    setMessage("");
+    try {
+      await api.post("/fees/balance/add", {
+        student_id: feeStudent.student_id,
+        term,
+        balance: parseFloat(newBalance),
+      });
+      setNewBalance("");
+      // Refresh
+      searchFeeStudent();
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || "Failed to update balance");
+      setActionLoading(false);
+    }
+  };
+
+  const handleRecordPayment = async () => {
+    if (!feeStudent || !paymentAmount.trim()) return;
+    setActionLoading(true);
+    setMessage("");
+    try {
+      const res = await api.post("/fees/payment/record", {
+        student_id: feeStudent.student_id,
+        amount: parseFloat(paymentAmount),
+        term,
+        recorded_by: teacher.teacher_id,
+      });
+      setMessage(`Payment recorded. Receipt: ${res.data.receipt_number}`);
+      setPaymentAmount("");
+      // Refresh
+      searchFeeStudent();
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || "Failed to record payment");
+      setActionLoading(false);
     }
   };
 
@@ -106,16 +151,61 @@ export default function FeesPage() {
           {message && <p className="text-sm text-red-600">{message}</p>}
 
           {feeStudent && (
-            <div className="border rounded-lg p-4 space-y-3">
-              <p className="font-medium text-lg">{feeStudent.student_name}</p>
-              <p className="text-sm">
-                Balance:{" "}
-                <span className={`font-bold ${feeStudent.cleared ? "text-green-600" : "text-red-600"}`}>
-                  KES {feeStudent.balance.toLocaleString()}
-                </span>
-                {feeStudent.cleared && <span className="ml-2 text-green-600 text-xs">(Cleared)</span>}
-              </p>
+            <div className="border rounded-lg p-4 space-y-4">
+              <div>
+                <p className="font-medium text-lg">{feeStudent.student_name}</p>
+                <p className="text-sm">
+                  Balance:{" "}
+                  <span className={`font-bold ${feeStudent.cleared ? "text-green-600" : "text-red-600"}`}>
+                    KES {feeStudent.balance.toLocaleString()}
+                  </span>
+                  {feeStudent.cleared && <span className="ml-2 text-green-600 text-xs">(Cleared)</span>}
+                </p>
+              </div>
 
+              {/* Edit Balance */}
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-black">Set New Balance (KES)</label>
+                  <input
+                    type="number"
+                    value={newBalance}
+                    onChange={(e) => setNewBalance(e.target.value)}
+                    className="w-full border border-gray-500 rounded p-1.5 text-sm text-black"
+                    min="0"
+                  />
+                </div>
+                <button
+                  onClick={handleUpdateBalance}
+                  disabled={actionLoading}
+                  className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
+                >
+                  Update Balance
+                </button>
+              </div>
+
+              {/* Record Payment */}
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-black">Payment Amount (KES)</label>
+                  <input
+                    type="number"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    className="w-full border border-gray-500 rounded p-1.5 text-sm text-black"
+                    min="0"
+                  />
+                </div>
+                <button
+                  onClick={handleRecordPayment}
+                  disabled={actionLoading}
+                  className="px-3 py-1.5 bg-green-600 text-white rounded text-sm"
+                >
+                  Record Payment
+                </button>
+              </div>
+
+              {/* Payment History */}
               {feeStudent.payments.length > 0 && (
                 <div>
                   <p className="text-xs font-medium mb-1 text-black">Recent Payments</p>
