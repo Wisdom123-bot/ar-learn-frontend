@@ -65,7 +65,7 @@ export default function StudentListPage() {
             placeholder="Search by name, admission number or class..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
           />
 
           {loading ? (
@@ -85,7 +85,11 @@ export default function StudentListPage() {
                 </thead>
                 <tbody>
                   {filtered.map((s) => (
-                    <tr key={s.id} className="border-t hover:bg-gray-50">
+                    <tr
+                      key={s.id}
+                      onClick={() => router.push(`/students/${s.id}`)}
+                      className="border-t hover:bg-gray-50 cursor-pointer"
+                    >
                       <td className="p-2 font-medium">{s.name}</td>
                       <td className="p-2 font-mono text-xs">{s.admission_number}</td>
                       <td className="p-2">{s.class_name}</td>
