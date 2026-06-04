@@ -262,6 +262,22 @@ export default function HeadteacherDashboardPage() {
                 Balance: <span className="font-bold text-red-600">KES {feeStudent.balance.toLocaleString()}</span>
                 {feeStudent.cleared && <span className="text-green-600 ml-2">(Cleared)</span>}
               </p>
+              {/* Timetable Auto-Generator (Premium) */}
+{teacher.is_premium && (
+  <button
+    onClick={async () => {
+      try {
+        const res = await api.post(`/timetable-auto/generate/${teacher.school_id}`);
+        alert(res.data.message);
+      } catch (err: any) {
+        alert(err.response?.data?.detail || "Failed to generate timetable");
+      }
+    }}
+    className="mb-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
+  >
+    🗓️ Auto‑Generate Timetable
+  </button>
+)}
               {/* Update balance */}
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
