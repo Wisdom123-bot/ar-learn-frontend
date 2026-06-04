@@ -14,14 +14,20 @@ export default function AIChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [schoolId, setSchoolId] = useState("");
+  const [teacherId, setTeacherId] = useState("");   // for auth token
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Get school ID from the logged‑in user (teacher/headteacher/dean/parent)
+  // Get school ID and teacher ID from the logged‑in user
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (stored) {
-      const t = JSON.parse(stored);
-      setSchoolId(t.school_id || "");
+      try {
+        const t = JSON.parse(stored);
+        setSchoolId(t.school_id || "");
+        setTeacherId(t.teacher_id || "");
+      } catch {
+        // ignore corrupt data
+      }
     }
   }, []);
 
@@ -32,21 +38,32 @@ export default function AIChatWidget() {
 
   const handleSend = async () => {
     const question = input.trim();
-    if (!question || !schoolId) return;
+    if (!question || !schoolId || !teacherId) return;
 
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await api.post("/ai-assistant/ask", {
-        school_id: schoolId,
-        question,
-      });
+      const res = await api.post(
+        "/ai-assistant/ask",
+        {
+          school_id: schoolId,
+          question,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${teacherId}`,
+          },
+        }
+      );
       const answer = res.data.answer || "I'm not sure how to answer that.";
       setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, something went wrong. Please try again." },
+      ]);
     } finally {
       setLoading(false);
     }
