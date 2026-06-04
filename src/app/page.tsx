@@ -84,21 +84,13 @@ export default function HomePage() {
             <p className="text-xl font-medium text-[#1E293B]">Welcome to Ar‑Learn</p>
             <p className="text-gray-600 max-w-md">Empowering schools, teachers, parents and students for a better tomorrow.</p>
           </div>
-          {/* Illustration placeholder – a simple modern school building */}
+          {/* App icon */}
           <div className="flex-1 flex justify-center">
-            <div className="relative w-64 h-64 sm:w-80 sm:h-80 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl shadow-2xl flex items-center justify-center">
-              <svg viewBox="0 0 200 200" className="w-48 h-48">
-                <rect x="30" y="80" width="140" height="90" rx="8" fill="#2563EB" />
-                <rect x="50" y="100" width="20" height="30" rx="4" fill="white" />
-                <rect x="90" y="100" width="20" height="30" rx="4" fill="white" />
-                <rect x="130" y="100" width="20" height="30" rx="4" fill="white" />
-                <rect x="70" y="50" width="60" height="40" rx="4" fill="#1E293B" />
-                <circle cx="100" cy="70" r="8" fill="#F59E0B" />
-                <path d="M60 80 L100 60 L140 80" stroke="#1E293B" strokeWidth="4" fill="none" />
-                <circle cx="160" cy="40" r="12" fill="white" opacity="0.8" />
-                <circle cx="170" cy="30" r="6" fill="white" opacity="0.6" />
-              </svg>
-            </div>
+            <img
+              src="/icon-512.png"
+              alt="Ar-Learn"
+              className="w-64 h-64 sm:w-80 sm:h-80 object-contain drop-shadow-2xl"
+            />
           </div>
         </div>
 
