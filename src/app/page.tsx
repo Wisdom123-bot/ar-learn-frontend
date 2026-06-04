@@ -8,23 +8,23 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#F5F8FC] text-[#1E293B] relative">
-     {/* ---- Top Header ---- */}
-<header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-  <button
-    onClick={() => setMenuOpen(!menuOpen)}
-    className="p-2 -ml-2 rounded-full hover:bg-gray-100"
-    aria-label="Menu"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-  <div className="flex items-center gap-3">
-    <span className="font-bold text-xl text-[#2563EB]">Ar‑Learn</span>
-  </div>
-  {/* empty spacer to keep brand centered */}
-  <div className="w-10"></div>
-</header>
+      {/* ---- Top Header ---- */}
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="p-2 -ml-2 rounded-full hover:bg-gray-100"
+          aria-label="Menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-xl text-[#2563EB]">Ar‑Learn</span>
+        </div>
+        {/* empty spacer to keep brand centered */}
+        <div className="w-10"></div>
+      </header>
 
       {/* ---- Slide‑out Navigation Drawer (Hamburger Menu) ---- */}
       {menuOpen && (
@@ -58,10 +58,6 @@ export default function HomePage() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#2563EB]" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
                 Contact Us
               </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#2563EB]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .552-.448 1-1 1H5a1 1 0 110-2h10a1 1 0 011 1z" clipRule="evenodd" /></svg>
-                Help Center
-              </Link>
             </nav>
 
             <div className="border-t border-gray-200 my-2"></div>
@@ -70,14 +66,6 @@ export default function HomePage() {
             <Link href="/admin/login" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100" onClick={() => setMenuOpen(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#9333EA]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
               Admin Login
-            </Link>
-            <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100" onClick={() => setMenuOpen(false)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#9333EA]" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-              System Administration
-            </Link>
-            <Link href="/admin/login" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100" onClick={() => setMenuOpen(false)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#9333EA]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-              Super Admin Access
             </Link>
           </div>
         </div>
@@ -193,7 +181,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Animation for drawer (optional, we can use a simple CSS class in globals) */}
+      {/* Animation for drawer */}
     </div>
   );
 }
