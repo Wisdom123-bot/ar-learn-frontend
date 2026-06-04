@@ -18,9 +18,10 @@ export default function StudentSearch() {
       return;
     }
     try {
-      const res = await api.get(`/students/by-admission?admission=${encodeURIComponent(value.trim())}`);
-      if (res.data) setResults([res.data]);
-      else setResults([]);
+      const res = await api.get(`/students/search`, {
+        params: { q: value.trim() },
+      });
+      setResults(res.data || []);
       setShowDropdown(true);
     } catch {
       setResults([]);
@@ -38,7 +39,7 @@ export default function StudentSearch() {
     <div className="relative w-full max-w-xs">
       <input
         type="text"
-        placeholder="Search student (admission no)..."
+        placeholder="Search by name or admission no..."
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
         className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-600"
@@ -54,7 +55,7 @@ export default function StudentSearch() {
               className="p-2 hover:bg-gray-100 cursor-pointer text-sm flex justify-between"
             >
               <span className="text-black">{student.name}</span>
-              <span className="text-black">{student.admission_number}</span>
+              <span className="text-black text-xs">{student.admission_number}</span>
             </div>
           ))}
         </div>
