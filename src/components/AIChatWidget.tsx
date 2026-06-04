@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import api from "@/lib/api";
 
 interface Message {
@@ -16,7 +16,18 @@ export default function AIChatWidget() {
   const [schoolId, setSchoolId] = useState("");
   const [teacherId, setTeacherId] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Dragging state
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Initialise position to bottom‑right on first render
+  useEffect(() => {
+    setPos({ x: window.innerWidth - 80, y: window.innerHeight - 80 });
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -36,11 +47,61 @@ export default function AIChatWidget() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ---- Drag handlers ----
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragging(true);
+    dragStart.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!dragging) return;
+      setPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
+    },
+    [dragging]
+  );
+
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
+
+  // Touch equivalents
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setDragging(true);
+    dragStart.current = { x: touch.clientX - pos.x, y: touch.clientY - pos.y };
+  };
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!dragging) return;
+      const touch = e.touches[0];
+      setPos({ x: touch.clientX - dragStart.current.x, y: touch.clientY - dragStart.current.y });
+    },
+    [dragging]
+  );
+
+  const handleTouchEnd = () => {
+    setDragging(false);
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleMouseMove, handleTouchMove]);
+
   const handleSend = async () => {
     const question = input.trim();
     if (!question) return;
 
-    // For guests and logged‑in users alike: send the question
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setInput("");
     setLoading(true);
@@ -81,10 +142,15 @@ export default function AIChatWidget() {
 
   return (
     <>
+      {/* Draggable floating button */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 transition"
+          ref={buttonRef}
+          onClick={() => !dragging && setOpen(true)}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          style={{ left: pos.x, top: pos.y }}
+          className="fixed z-50 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 transition cursor-grab active:cursor-grabbing"
           aria-label="Chat with AI Assistant"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,6 +159,7 @@ export default function AIChatWidget() {
         </button>
       )}
 
+      {/* Chat panel */}
       {open && (
         <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
           <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
@@ -109,7 +176,7 @@ export default function AIChatWidget() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
             {messages.length === 0 && (
-              <p className="text-center text-sm text-gray-400 mt-20">
+              <p className="text-center text-sm text-gray-400 mt-20 whitespace-pre-line">
                 {isLoggedIn
                   ? "Hi! I can help you with questions like:\n• “Which class performed best?”\n• “Who scored highest in Math?”\n• “Show me attendance concerns”"
                   : "👋 Welcome! I'm Ar‑Learn Assistant. Ask me anything about this platform:\n• “What does Ar‑Learn do?”\n• “What features are available?”\n• “How do I get started?”"}
