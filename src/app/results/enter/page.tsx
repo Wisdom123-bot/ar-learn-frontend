@@ -24,6 +24,8 @@ interface ResultRow {
   remarks: string;
 }
 
+const PAGE_SIZE = 50;
+
 export default function EnterResultsPage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -37,6 +39,7 @@ export default function EnterResultsPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -65,16 +68,33 @@ export default function EnterResultsPage() {
             remarks: "",
           }))
         );
+        setCurrentPage(0);  // reset to first page when class changes
       })
       .catch(console.error);
   }, [selectedAssignment, teacher]);
 
-  // Filter students based on search query (name or admission number)
+  // Filter students based on search query
   const filteredStudents = students.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE);
+  const startIdx = currentPage * PAGE_SIZE;
+  const paginatedStudents = filteredStudents.slice(startIdx, startIdx + PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    if (page >= 0 && page < totalPages) setCurrentPage(page);
+  };
+
+  // Ensure current page is valid when filteredStudents changes
+  useEffect(() => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [filteredStudents.length, totalPages, currentPage]);
 
   const handleScoreChange = (studentId: string, value: string) => {
     setResults((prev) =>
@@ -94,7 +114,6 @@ export default function EnterResultsPage() {
     setLoading(true);
     setMessage("");
 
-    // Only include rows where a score is entered
     const filledResults = results.filter((r) => r.score.trim() !== "");
     if (filledResults.length === 0) {
       setMessage("Please enter at least one score.");
@@ -201,17 +220,20 @@ export default function EnterResultsPage() {
             type="text"
             placeholder="Type name or admission number..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(0);  // reset to first page on new search
+            }}
             className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
           />
         </div>
       </div>
 
-      {/* Students Table */}
+      {/* Students Table with Pagination */}
       {filteredStudents.length > 0 ? (
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-            <div className="max-h-96 overflow-y-auto">
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 400px)" }}>
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 sticky top-0">
                   <tr>
@@ -221,7 +243,7 @@ export default function EnterResultsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => {
+                  {paginatedStudents.map((student) => {
                     const resultRow = results.find((r) => r.student_id === student.id);
                     if (!resultRow) return null;
                     return (
@@ -257,6 +279,31 @@ export default function EnterResultsPage() {
               </table>
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 0}
+                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+              >
+                ← Previous
+              </button>
+              <span className="text-sm text-black">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
+                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+              >
+                Next →
+              </button>
+            </div>
+          )}
 
           {message && (
             <div className={`p-3 rounded-lg mb-4 text-sm ${
