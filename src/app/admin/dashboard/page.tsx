@@ -82,6 +82,21 @@ export default function AdminDashboardPage() {
     setToken(stored);
     fetchSchools(stored);
   }, []);
+  const [bannedIps, setBannedIps] = useState<any[]>([]);
+const [showBanned, setShowBanned] = useState(false);
+
+const fetchBannedIps = async () => {
+    try {
+        const res = await api.get("/admin/banned-ips", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        setBannedIps(res.data || []);
+    } catch {}
+};
+
+useEffect(() => {
+    if (token && showBanned) fetchBannedIps();
+}, [token, showBanned]); 
 
   const fetchSchools = async (authToken: string) => {
     try {
@@ -233,6 +248,49 @@ export default function AdminDashboardPage() {
           </form>
         </div>
       )}
+      {showBanned && (
+    <div className="bg-gray-800 p-4 rounded-xl mb-4 border border-gray-700">
+        <h3 className="font-semibold text-lg mb-3">Banned IPs</h3>
+        {bannedIps.length === 0 ? (
+            <p className="text-sm text-gray-400">No banned IPs.</p>
+        ) : (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="bg-gray-700">
+                        <tr>
+                            <th className="text-left p-2">IP Address</th>
+                            <th className="text-left p-2">Attempts</th>
+                            <th className="text-left p-2">Banned Until</th>
+                            <th className="text-left p-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {bannedIps.map((item: any) => (
+                            <tr key={item.id} className="border-t border-gray-700">
+                                <td className="p-2">{item.ip_address}</td>
+                                <td className="p-2">{item.attempts}</td>
+                                <td className="p-2">{new Date(item.banned_until).toLocaleString()}</td>
+                                <td className="p-2">
+                                    <button
+                                        onClick={async () => {
+                                            await api.delete(`/admin/banned-ips/${item.ip_address}`, {
+                                                headers: { Authorization: `Bearer ${token}` },
+                                            });
+                                            fetchBannedIps();
+                                        }}
+                                        className="text-xs bg-green-700 text-green-200 px-2 py-1 rounded"
+                                    >
+                                        Unban
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )}
+    </div>
+)}
 
       {message && (
         <div className="mb-4 p-3 bg-gray-800 rounded-lg text-sm text-green-400 border border-gray-700">
@@ -344,6 +402,12 @@ export default function AdminDashboardPage() {
                   {brandMessage && <p className="text-xs text-green-400 mt-2">{brandMessage}</p>}
                 </div>
               )}
+              <button
+    onClick={() => { setShowBanned(!showBanned); if (!showBanned) fetchBannedIps(); }}
+    className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+>
+    {showBanned ? "Hide Banned IPs" : "Banned IPs"}
+</button>
 
               {/* Expanded Details Panel */}
               {expandedSchool === school.id && (
