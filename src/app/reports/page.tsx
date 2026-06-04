@@ -24,6 +24,7 @@ export default function ReportsPage() {
   const [term, setTerm] = useState("Term 1 2025");
   const [message, setMessage] = useState("");
   const [printingAll, setPrintingAll] = useState(false);
+  const [classSize, setClassSize] = useState<number>(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -47,6 +48,14 @@ export default function ReportsPage() {
         .catch(() => {});
     }
   }, [router]);
+
+  // Fetch class size when selectedClass changes
+  useEffect(() => {
+    if (!selectedClass) return;
+    api.get(`/classes/${selectedClass}/students`)
+      .then((res) => setClassSize((res.data || []).length))
+      .catch(() => setClassSize(0));
+  }, [selectedClass]);
 
   const buildUrl = (base: string, studentId?: string) => {
     const params = new URLSearchParams();
@@ -82,8 +91,8 @@ export default function ReportsPage() {
     if (!selectedClass) return;
     setPrintingAll(true);
     try {
-      const res = await api.get(`/teachers/${teacher.teacher_id}/students`);
-      const classStudents = res.data.filter((s: any) => s.class_id === selectedClass);
+      const res = await api.get(`/classes/${selectedClass}/students`);
+      const classStudents = res.data || [];
       classStudents.forEach((student: any, index: number) => {
         setTimeout(() => {
           window.open(buildUrl(`/print/report/`, student.id), "_blank");
@@ -219,13 +228,21 @@ export default function ReportsPage() {
             <h2 className="font-semibold text-gray-800 mb-2">
               🖨️ Print All Report Cards for Class
             </h2>
-            <button
-              onClick={printAllReportCards}
-              disabled={printingAll}
-              className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold disabled:opacity-50"
-            >
-              {printingAll ? "Opening..." : "Print All Report Cards"}
-            </button>
+            {classSize > 500 ? (
+              <p className="text-sm text-red-600 mb-2">
+                This class has {classSize} students. Printing all individual reports may
+                crash your browser. Please use the <strong>Download Class Reports (ZIP)</strong> button
+                instead to get all PDFs at once, then print from your computer.
+              </p>
+            ) : (
+              <button
+                onClick={printAllReportCards}
+                disabled={printingAll}
+                className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold disabled:opacity-50"
+              >
+                {printingAll ? "Opening..." : "Print All Report Cards"}
+              </button>
+            )}
           </div>
         </div>
       </div>
