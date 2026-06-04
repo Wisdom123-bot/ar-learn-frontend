@@ -278,6 +278,12 @@ export default function HeadteacherDashboardPage() {
     onClose={() => setShowTimetableModal(false)}
   />
 )}
+<button
+  onClick={() => router.push("/admissions")}
+  className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"
+>
+  Admissions
+</button>
               {/* Update balance */}
               <div className="flex gap-2 items-end">
                 <div className="flex-1">

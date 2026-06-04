@@ -158,6 +158,12 @@ export default function DeanDashboardPage() {
     onClose={() => setShowTimetableModal(false)}
   />
 )}
+<button
+  onClick={() => router.push("/admissions")}
+  className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"
+>
+  Admissions
+</button>
           <button
             onClick={() => router.push("/students")}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
