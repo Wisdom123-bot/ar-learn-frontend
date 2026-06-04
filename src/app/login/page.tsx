@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
@@ -33,6 +33,27 @@ export default function UnifiedLoginPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // ---------- Auto‑login if session exists ----------
+  useEffect(() => {
+    const stored = localStorage.getItem("teacher");
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        // Minimal validation: must have teacher_id and role
+        if (user.teacher_id && user.role) {
+          if (user.role === "headteacher") {
+            router.push("/headteacher/dashboard");
+          } else {
+            router.push("/dashboard");
+          }
+        }
+      } catch {
+        // corrupted data – ignore
+        localStorage.removeItem("teacher");
+      }
+    }
+  }, [router]);
 
   // Search schools
   const handleSearch = async () => {
@@ -85,7 +106,7 @@ export default function UnifiedLoginPage() {
       if (selectedRole === "headteacher") {
         router.push("/headteacher/dashboard");
       } else {
-        router.push("/dashboard"); // teacher & dean go to main dashboard for now
+        router.push("/dashboard");
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || "Login failed. Check your details.");
