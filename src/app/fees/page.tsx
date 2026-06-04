@@ -42,12 +42,22 @@ export default function FeesPage() {
     setMessage("");
     setFeeStudent(null);
     try {
-      const res = await api.get(`/fees/student/${searchAdm.trim()}`, {
+      // Step 1: Get student UUID from admission number
+      const studentRes = await api.get(
+        `/students/by-admission?admission=${encodeURIComponent(searchAdm.trim())}`
+      );
+      const studentId = studentRes.data.id;
+      if (!studentId) throw new Error("Student not found");
+
+      // Step 2: Fetch fee details using the UUID
+      const feeRes = await api.get(`/fees/student/${studentId}`, {
         params: { term },
       });
-      setFeeStudent(res.data);
+      setFeeStudent(feeRes.data);
     } catch (err: any) {
-      setMessage(err.response?.data?.detail || "Student not found or fee error");
+      setMessage(
+        err.response?.data?.detail || "Student not found or fee error"
+      );
     } finally {
       setLoading(false);
     }
@@ -82,7 +92,7 @@ export default function FeesPage() {
               placeholder="Student admission number"
               value={searchAdm}
               onChange={(e) => setSearchAdm(e.target.value)}
-              className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-black"
+              className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-600"
             />
             <button
               onClick={searchFeeStudent}
@@ -99,7 +109,8 @@ export default function FeesPage() {
             <div className="border rounded-lg p-4 space-y-3">
               <p className="font-medium text-lg">{feeStudent.student_name}</p>
               <p className="text-sm">
-                Balance: <span className={`font-bold ${feeStudent.cleared ? "text-green-600" : "text-red-600"}`}>
+                Balance:{" "}
+                <span className={`font-bold ${feeStudent.cleared ? "text-green-600" : "text-red-600"}`}>
                   KES {feeStudent.balance.toLocaleString()}
                 </span>
                 {feeStudent.cleared && <span className="ml-2 text-green-600 text-xs">(Cleared)</span>}
