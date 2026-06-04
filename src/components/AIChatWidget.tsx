@@ -14,10 +14,10 @@ export default function AIChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [schoolId, setSchoolId] = useState("");
-  const [teacherId, setTeacherId] = useState("");   // for auth token
+  const [teacherId, setTeacherId] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Get school ID and teacher ID from the logged‑in user
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (stored) {
@@ -25,41 +25,44 @@ export default function AIChatWidget() {
         const t = JSON.parse(stored);
         setSchoolId(t.school_id || "");
         setTeacherId(t.teacher_id || "");
+        setIsLoggedIn(true);
       } catch {
-        // ignore corrupt data
+        setIsLoggedIn(false);
       }
     }
   }, []);
 
-  // Scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
     const question = input.trim();
-    if (!question || !schoolId || !teacherId) return;
+    if (!question) return;
 
+    // For guests and logged‑in users alike: send the question
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setInput("");
     setLoading(true);
 
     try {
+      const headers: any = {};
+      if (isLoggedIn && teacherId) {
+        headers.Authorization = `Bearer ${teacherId}`;
+      }
+
       const res = await api.post(
         "/ai-assistant/ask",
         {
-          school_id: schoolId,
+          school_id: schoolId || "guest",
           question,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${teacherId}`,
-          },
-        }
+        { headers }
       );
       const answer = res.data.answer || "I'm not sure how to answer that.";
       setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
-    } catch {
+    } catch (err) {
+      console.error("AIChatWidget: API call failed", err);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "Sorry, something went wrong. Please try again." },
@@ -78,7 +81,6 @@ export default function AIChatWidget() {
 
   return (
     <>
-      {/* Floating button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -91,35 +93,30 @@ export default function AIChatWidget() {
         </button>
       )}
 
-      {/* Chat panel */}
       {open && (
         <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          {/* Header */}
           <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
             <div>
               <p className="font-semibold text-sm">Ar‑Learn Assistant</p>
-              <p className="text-xs text-blue-100">Ask me anything about your school</p>
+              <p className="text-xs text-blue-100">
+                {isLoggedIn ? "Ask me anything about your school" : "Ask me about Ar‑Learn"}
+              </p>
             </div>
             <button onClick={() => setOpen(false)} className="text-white hover:text-blue-100">
               ✕
             </button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
             {messages.length === 0 && (
               <p className="text-center text-sm text-gray-400 mt-20">
-                Hi! I can help you with questions like:
-                <br />• “Which class performed best?”
-                <br />• “Who scored highest in Math?”
-                <br />• “Show me attendance concerns”
+                {isLoggedIn
+                  ? "Hi! I can help you with questions like:\n• “Which class performed best?”\n• “Who scored highest in Math?”\n• “Show me attendance concerns”"
+                  : "👋 Welcome! I'm Ar‑Learn Assistant. Ask me anything about this platform:\n• “What does Ar‑Learn do?”\n• “What features are available?”\n• “How do I get started?”"}
               </p>
             )}
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[85%] px-4 py-2 rounded-xl text-sm ${
                     msg.role === "user"
@@ -141,7 +138,6 @@ export default function AIChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div className="p-3 border-t border-gray-200 bg-white">
             <div className="flex gap-2">
               <input
@@ -149,7 +145,7 @@ export default function AIChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a question..."
+                placeholder={isLoggedIn ? "Type a question..." : "Ask about Ar‑Learn..."}
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-black placeholder-gray-400"
               />
               <button
