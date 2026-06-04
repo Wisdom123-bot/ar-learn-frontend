@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
@@ -22,6 +22,8 @@ interface AttendanceRow {
   status: "Present" | "Absent" | "Sick" | "Suspended";
 }
 
+const PAGE_SIZE = 50;
+
 export default function AttendancePage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -32,6 +34,8 @@ export default function AttendancePage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -41,31 +45,28 @@ export default function AttendancePage() {
     }
     const t = JSON.parse(stored);
     setTeacher(t);
-    // Fetch teacher assignments to get class list
     api.get(`/teachers/${t.teacher_id}/assignments`).then((res) => {
       setAssignments(res.data);
       if (res.data.length > 0) setSelectedClassId(res.data[0].class_id);
     }).catch(console.error);
   }, [router]);
 
-  // When selected class changes, fetch its students
+  // Fetch students of the selected class directly – no more filtering all students
   useEffect(() => {
-    if (!teacher || !selectedClassId) return;
-    api.get(`/teachers/${teacher.teacher_id}/students`)
+    if (!selectedClassId) return;
+    api.get(`/classes/${selectedClassId}/students`)
       .then((res) => {
-        const classStudents = res.data.filter(
-          (s: any) => s.class_id === selectedClassId
-        );
-        setStudents(classStudents);
+        setStudents(res.data || []);
         setAttendance(
-          classStudents.map((s: any) => ({
+          (res.data || []).map((s: any) => ({
             student_id: s.id,
-            status: "Present",
+            status: "Present" as const,
           }))
         );
+        setCurrentPage(0);
       })
       .catch(console.error);
-  }, [selectedClassId, teacher]);
+  }, [selectedClassId]);
 
   const handleStatusChange = (studentId: string, status: AttendanceRow["status"]) => {
     setAttendance((prev) =>
@@ -97,25 +98,59 @@ export default function AttendancePage() {
     }
   };
 
+  // Filtered students with useMemo – no extra renders on keystroke
+  const filteredStudents = useMemo(() => {
+    if (!searchQuery.trim()) return students;
+    const q = searchQuery.toLowerCase();
+    return students.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.admission_number.toLowerCase().includes(q)
+    );
+  }, [students, searchQuery]);
+
+  // Instant lookup map – O(1) instead of O(n)
+  const attendanceMap = useMemo(() => {
+    const map: Record<string, AttendanceRow> = {};
+    attendance.forEach((a) => (map[a.student_id] = a));
+    return map;
+  }, [attendance]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE);
+  const startIdx = currentPage * PAGE_SIZE;
+  const paginatedStudents = filteredStudents.slice(startIdx, startIdx + PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    if (page >= 0 && page < totalPages) setCurrentPage(page);
+  };
+
+  // Reset page if filtered length shrinks
+  useEffect(() => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [totalPages, currentPage]);
+
   if (!teacher) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-4 text-black">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-gray-500">
+        <button onClick={() => router.back()} className="text-black font-medium">
           ← Back
         </button>
-        <h1 className="text-xl font-bold text-gray-800">Take Attendance</h1>
+        <h1 className="text-xl font-bold text-black">Take Attendance</h1>
       </div>
 
       {/* Class & Date selector */}
       <div className="bg-white p-4 rounded-xl shadow-sm mb-4 space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Class</label>
+          <label className="block text-sm font-medium text-black mb-1">Class</label>
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
           >
             {assignments.map((a) => (
               <option key={a.class_id} value={a.class_id}>
@@ -125,44 +160,57 @@ export default function AttendancePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Date</label>
+          <label className="block text-sm font-medium text-black mb-1">Date</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">Search Student</label>
+          <input
+            type="text"
+            placeholder="Type name or admission number..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
           />
         </div>
       </div>
 
-      {/* Student list with status toggles */}
-      {students.length > 0 ? (
+      {filteredStudents.length > 0 ? (
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-            <div className="max-h-96 overflow-y-auto">
+            <div style={{ maxHeight: "calc(100vh - 400px)", overflowY: "auto" }}>
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 sticky top-0">
                   <tr>
-                    <th className="text-left p-2 font-medium">Student</th>
-                    <th className="w-32 p-2 font-medium text-center">Status</th>
+                    <th className="text-left p-2 font-medium text-black">Student</th>
+                    <th className="w-32 p-2 font-medium text-center text-black">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {attendance.map((row) => {
-                    const student = students.find((s) => s.id === row.student_id);
+                  {paginatedStudents.map((student) => {
+                    const row = attendanceMap[student.id];   // O(1)
+                    if (!row) return null;
                     return (
-                      <tr key={row.student_id} className="border-t">
+                      <tr key={student.id} className="border-t">
                         <td className="p-2">
-                          <p className="font-medium">{student?.name}</p>
-                          <p className="text-xs text-gray-400">{student?.admission_number}</p>
+                          <p className="font-medium text-black">{student.name}</p>
+                          <p className="text-xs text-black">{student.admission_number}</p>
                         </td>
                         <td className="p-2">
                           <select
                             value={row.status}
                             onChange={(e) =>
-                              handleStatusChange(row.student_id, e.target.value as any)
+                              handleStatusChange(student.id, e.target.value as any)
                             }
-                            className="w-full border rounded-lg p-1.5 text-sm text-center"
+                            className="w-full border border-gray-500 rounded-lg p-1.5 text-sm text-center text-black"
                           >
                             <option value="Present">Present</option>
                             <option value="Absent">Absent</option>
@@ -177,6 +225,31 @@ export default function AttendancePage() {
               </table>
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 0}
+                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+              >
+                ← Previous
+              </button>
+              <span className="text-sm text-black">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
+                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+              >
+                Next →
+              </button>
+            </div>
+          )}
 
           {message && (
             <div className={`p-3 rounded-lg mb-4 text-sm ${message.toLowerCase().includes("failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
@@ -193,7 +266,9 @@ export default function AttendancePage() {
           </button>
         </form>
       ) : (
-        <p className="text-center text-gray-400 py-10">No students in this class.</p>
+        <p className="text-center text-black py-10">
+          {students.length === 0 ? "No students in this class." : "No students match your search."}
+        </p>
       )}
     </div>
   );
