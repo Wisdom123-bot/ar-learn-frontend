@@ -24,6 +24,8 @@ export default function SchoolRegistrationPage() {
   const [deanName, setDeanName] = useState("");
   const [classes, setClasses] = useState<ClassInput[]>([{ name: "", target_mean_score: "" }]);
   const [teacherNames, setTeacherNames] = useState<string[]>([""]);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -91,6 +93,8 @@ export default function SchoolRegistrationPage() {
     const payload = {
       school_name: schoolName.trim(),
       county: county.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
       number_of_students: parseInt(studentCount) || 0,
       number_of_teachers: validTeachers.length,
       headteacher_name: headteacherName.trim() || undefined,
@@ -259,6 +263,28 @@ export default function SchoolRegistrationPage() {
                 className="w-full border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
                 required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Email (required)</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Phone (required)</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
+                  required
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
