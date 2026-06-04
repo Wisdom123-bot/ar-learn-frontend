@@ -28,7 +28,6 @@ export default function DashboardPage() {
     }
     const t = JSON.parse(stored);
     setTeacher(t);
-    // Fetch assigned students
     api
       .get(`/teachers/${t.teacher_id}/students`)
       .then((res) => setStudents(res.data))
@@ -48,17 +47,15 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">
-            Welcome, {teacher.name}
-          </h1>
-          <p className="text-sm text-gray-500">{teacher.school_name}</p>
+          <h1 className="text-xl font-bold text-black">Welcome, {teacher.name}</h1>
+          <p className="text-sm text-black">{teacher.school_name}</p>
         </div>
         <div className="flex items-center gap-4">
           <StudentSearch />
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
           <button
             onClick={handleLogout}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="px-3 py-1.5 text-sm border border-gray-500 rounded-lg text-black hover:bg-gray-100"
           >
             Log out
           </button>
@@ -83,7 +80,7 @@ export default function DashboardPage() {
           <button
             key={action.label}
             onClick={() => router.push(action.href)}
-            className="p-3 bg-white rounded-xl shadow-sm text-center text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+            className="p-3 bg-white rounded-xl shadow-sm text-center text-sm font-medium text-black hover:bg-blue-50 hover:text-blue-600 transition"
           >
             {action.label}
           </button>
@@ -91,13 +88,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Student List */}
-      <h2 className="text-lg font-semibold text-gray-800 mb-3">
+      <h2 className="text-lg font-semibold text-black mb-3">
         Your Students ({students.length})
       </h2>
       {loading ? (
-        <div className="text-center text-gray-400 py-10">Loading…</div>
+        <div className="text-center text-black py-10">Loading…</div>
       ) : students.length === 0 ? (
-        <div className="text-center text-gray-400 py-10">
+        <div className="text-center text-black py-10">
           No students assigned yet.
         </div>
       ) : (
@@ -108,8 +105,8 @@ export default function DashboardPage() {
               className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center"
             >
               <div>
-                <p className="font-medium text-gray-800">{s.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="font-medium text-black">{s.name}</p>
+                <p className="text-xs text-black">
                   {s.admission_number} · {s.class_name}
                 </p>
               </div>
