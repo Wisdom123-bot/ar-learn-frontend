@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import dynamic from "next/dynamic";
 import StudentSearch from "@/components/StudentSearch";
 import NotificationBell from "@/components/NotificationBell";
+import TimetableGeneratorModal from "@/components/TimetableGeneratorModal";
 
 interface DashboardData {
   school_mean: number;
@@ -41,7 +42,7 @@ export default function HeadteacherDashboardPage() {
   const [newBalance, setNewBalance] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [showFeePanel, setShowFeePanel] = useState(false);
-
+  const [showTimetableModal, setShowTimetableModal] = useState(false);
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
   const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
@@ -265,18 +266,17 @@ export default function HeadteacherDashboardPage() {
               {/* Timetable Auto-Generator (Premium) */}
 {teacher.is_premium && (
   <button
-    onClick={async () => {
-      try {
-        const res = await api.post(`/timetable-auto/generate/${teacher.school_id}`);
-        alert(res.data.message);
-      } catch (err: any) {
-        alert(err.response?.data?.detail || "Failed to generate timetable");
-      }
-    }}
-    className="mb-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
+    onClick={() => setShowTimetableModal(true)}
+    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
   >
     🗓️ Auto‑Generate Timetable
   </button>
+)}
+{showTimetableModal && (
+  <TimetableGeneratorModal
+    schoolId={teacher.school_id}
+    onClose={() => setShowTimetableModal(false)}
+  />
 )}
               {/* Update balance */}
               <div className="flex gap-2 items-end">

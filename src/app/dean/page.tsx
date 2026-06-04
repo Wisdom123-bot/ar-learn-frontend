@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import StudentSearch from "@/components/StudentSearch";
 import NotificationBell from "@/components/NotificationBell";
+import TimetableGeneratorModal from "@/components/TimetableGeneratorModal";
 
 interface DeanDashboardData {
   attendance_summary: {
@@ -55,7 +56,7 @@ export default function DeanDashboardPage() {
     }
     fetchDashboard(t.school_id, term);
   }, []);
-
+  const [showTimetableModal, setShowTimetableModal] = useState(false);
   const fetchDashboard = async (schoolId: string, t: string) => {
     setLoading(true);
     setMessage("");
@@ -144,19 +145,18 @@ export default function DeanDashboardPage() {
             Assign Teachers
           </button>
           {teacher.is_premium && (
-            <button
-    onClick={async () => {
-      try {
-        const res = await api.post(`/timetable-auto/generate/${teacher.school_id}`);
-        alert(res.data.message);
-      } catch (err: any) {
-        alert(err.response?.data?.detail || "Failed to generate timetable");
-      }
-    }}
+  <button
+    onClick={() => setShowTimetableModal(true)}
     className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
   >
     🗓️ Auto‑Generate Timetable
   </button>
+)}
+{showTimetableModal && (
+  <TimetableGeneratorModal
+    schoolId={teacher.school_id}
+    onClose={() => setShowTimetableModal(false)}
+  />
 )}
           <button
             onClick={() => router.push("/students")}
