@@ -143,6 +143,21 @@ export default function DeanDashboardPage() {
           >
             Assign Teachers
           </button>
+          {teacher.is_premium && (
+            <button
+    onClick={async () => {
+      try {
+        const res = await api.post(`/timetable-auto/generate/${teacher.school_id}`);
+        alert(res.data.message);
+      } catch (err: any) {
+        alert(err.response?.data?.detail || "Failed to generate timetable");
+      }
+    }}
+    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
+  >
+    🗓️ Auto‑Generate Timetable
+  </button>
+)}
           <button
             onClick={() => router.push("/students")}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
