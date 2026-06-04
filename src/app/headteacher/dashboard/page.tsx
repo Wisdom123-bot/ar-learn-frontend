@@ -43,9 +43,15 @@ export default function HeadteacherDashboardPage() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [showFeePanel, setShowFeePanel] = useState(false);
   const [showTimetableModal, setShowTimetableModal] = useState(false);
+  const [termFee, setTermFee] = useState("");
+  const [termFeeAmount, setTermFeeAmount] = useState(0);
+  const [deficit, setDeficit] = useState({ term_fee: 0, deficit: 0, total_expected: 0, total_collected: 0 });
+  const [showFeeSettings, setShowFeeSettings] = useState(false);
+
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
   const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -102,6 +108,31 @@ export default function HeadteacherDashboardPage() {
     }
   };
 
+  const fetchTermFee = async () => {
+    try {
+      const res = await api.get("/fees/term-fee", { params: { school_id: schoolId, term } });
+      setTermFeeAmount(res.data.amount || 0);
+      setTermFee(String(res.data.amount || ""));
+    } catch {}
+  };
+
+  const fetchDeficit = async () => {
+    try {
+      const res = await api.get("/fees/deficit", { params: { school_id: schoolId, term } });
+      setDeficit(res.data);
+    } catch {}
+  };
+
+  const handleSetTermFee = async () => {
+    try {
+      await api.post("/fees/term-fee", { amount: parseFloat(termFee) || 0 }, { params: { school_id: schoolId, term } });
+      fetchTermFee();
+      fetchDeficit();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to set term fee");
+    }
+  };
+
   const handleUpdateBalance = async () => {
     if (!feeStudent || !newBalance) return;
     try {
@@ -111,7 +142,7 @@ export default function HeadteacherDashboardPage() {
         balance: parseFloat(newBalance),
       });
       setFeeMessage("Balance updated.");
-      searchFeeStudent(); // refresh
+      searchFeeStudent();
     } catch (err: any) {
       setFeeMessage(err.response?.data?.detail || "Failed to update balance");
     }
@@ -128,7 +159,7 @@ export default function HeadteacherDashboardPage() {
       });
       setFeeMessage(`Payment recorded. Receipt: ${res.data.receipt_number}`);
       setPaymentAmount("");
-      searchFeeStudent(); // refresh
+      searchFeeStudent();
     } catch (err: any) {
       setFeeMessage(err.response?.data?.detail || "Failed to record payment");
     }
@@ -147,6 +178,13 @@ export default function HeadteacherDashboardPage() {
     if (url) window.open(url, "_blank");
     setShowExportMenu(false);
   };
+
+  useEffect(() => {
+    if (schoolId) {
+      fetchTermFee();
+      fetchDeficit();
+    }
+  }, [schoolId, term]);
 
   if (!teacher) return null;
 
@@ -169,7 +207,6 @@ export default function HeadteacherDashboardPage() {
         <div className="flex items-center gap-4">
           <StudentSearch />
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
-          {/* Export button */}
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
@@ -226,6 +263,51 @@ export default function HeadteacherDashboardPage() {
         </button>
       </form>
 
+      {/* Fee Settings & Deficit */}
+      <button
+        onClick={() => setShowFeeSettings(!showFeeSettings)}
+        className="mb-4 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium"
+      >
+        {showFeeSettings ? "Hide Fee Settings" : "Fee Settings & Deficit"}
+      </button>
+
+      {showFeeSettings && (
+        <div className="bg-white p-4 rounded-xl shadow-sm mb-4 space-y-3">
+          <h3 className="font-semibold text-gray-800">Term Fee Configuration</h3>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1">
+              <label className="text-xs">Fee per Student (KES)</label>
+              <input
+                type="number"
+                value={termFee}
+                onChange={(e) => setTermFee(e.target.value)}
+                className="w-full border rounded p-1.5 text-sm"
+              />
+            </div>
+            <button onClick={handleSetTermFee} className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm">
+              Set Fee
+            </button>
+          </div>
+
+          {deficit.term_fee > 0 && (
+            <div className="space-y-2 mt-3">
+              <div className="flex justify-between text-sm">
+                <span>Total Expected:</span>
+                <span className="font-bold">KES {deficit.total_expected.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Total Collected:</span>
+                <span className="font-bold">KES {deficit.total_collected.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t pt-2">
+                <span>School Deficit:</span>
+                <span className="font-bold text-red-600">KES {deficit.deficit.toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Fee Management Button */}
       <button
         onClick={() => setShowFeePanel(!showFeePanel)}
@@ -263,54 +345,28 @@ export default function HeadteacherDashboardPage() {
                 Balance: <span className="font-bold text-red-600">KES {feeStudent.balance.toLocaleString()}</span>
                 {feeStudent.cleared && <span className="text-green-600 ml-2">(Cleared)</span>}
               </p>
-              {/* Timetable Auto-Generator (Premium) */}
-{teacher.is_premium && (
-  <button
-    onClick={() => setShowTimetableModal(true)}
-    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
-  >
-    🗓️ Auto‑Generate Timetable
-  </button>
-)}
-{showTimetableModal && (
-  <TimetableGeneratorModal
-    schoolId={teacher.school_id}
-    onClose={() => setShowTimetableModal(false)}
-  />
-)}
-<button
-  onClick={() => router.push("/admissions")}
-  className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"
->
-  Admissions
-</button>
-              {/* Update balance */}
+              {teacher.is_premium && (
+                <button onClick={() => setShowTimetableModal(true)} className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium">
+                  🗓️ Auto‑Generate Timetable
+                </button>
+              )}
+              <button onClick={() => router.push("/admissions")} className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium">
+                Admissions
+              </button>
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
                   <label className="text-xs">New Balance (KES)</label>
-                  <input
-                    type="number"
-                    value={newBalance}
-                    onChange={(e) => setNewBalance(e.target.value)}
-                    className="w-full border rounded p-1.5 text-sm"
-                  />
+                  <input type="number" value={newBalance} onChange={(e) => setNewBalance(e.target.value)} className="w-full border rounded p-1.5 text-sm" />
                 </div>
                 <button onClick={handleUpdateBalance} className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm">Set Balance</button>
               </div>
-              {/* Record payment */}
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
                   <label className="text-xs">Payment Amount (KES)</label>
-                  <input
-                    type="number"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full border rounded p-1.5 text-sm"
-                  />
+                  <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="w-full border rounded p-1.5 text-sm" />
                 </div>
                 <button onClick={handleRecordPayment} className="px-3 py-1.5 bg-green-600 text-white rounded text-sm">Record Payment</button>
               </div>
-              {/* Recent payments */}
               {feeStudent.payments && feeStudent.payments.length > 0 && (
                 <div>
                   <p className="text-xs font-medium mb-1">Recent Payments</p>
@@ -327,13 +383,16 @@ export default function HeadteacherDashboardPage() {
         </div>
       )}
 
+      {showTimetableModal && (
+        <TimetableGeneratorModal schoolId={teacher.school_id} onClose={() => setShowTimetableModal(false)} />
+      )}
+
       {loading ? (
         <div className="text-center text-gray-400 py-20">Loading dashboard…</div>
       ) : message ? (
         <div className="text-center text-red-500 py-10">{message}</div>
       ) : data ? (
         <div className="space-y-4">
-          {/* School overview cards */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">School Mean</p>
@@ -344,47 +403,31 @@ export default function HeadteacherDashboardPage() {
               <p className="text-2xl font-bold text-red-600">{data.risk_student_count}</p>
             </div>
           </div>
-          {/* Premium Charts – only visible when is_premium is true */}
-          {teacher.is_premium && (
-            <PremiumCharts schoolId={teacher.school_id} term={term} />
-          )}
-          {/* Best / Worst Class & Subject */}
+          {teacher.is_premium && <PremiumCharts schoolId={teacher.school_id} term={term} />}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">Best Class</p>
-              <p className="text-lg font-semibold text-gray-800">
-                {data.best_class?.class_name || "—"}
-              </p>
+              <p className="text-lg font-semibold text-gray-800">{data.best_class?.class_name || "—"}</p>
               <p className="text-sm text-green-600">{data.best_class?.mean_score}%</p>
             </div>
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">Worst Class</p>
-              <p className="text-lg font-semibold text-gray-800">
-                {data.worst_class?.class_name || "—"}
-              </p>
+              <p className="text-lg font-semibold text-gray-800">{data.worst_class?.class_name || "—"}</p>
               <p className="text-sm text-red-600">{data.worst_class?.mean_score}%</p>
             </div>
           </div>
-
-          {/* Best / Worst Subject */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">Best Subject</p>
-              <p className="text-lg font-semibold text-gray-800">
-                {data.best_subject?.subject_name || "—"}
-              </p>
+              <p className="text-lg font-semibold text-gray-800">{data.best_subject?.subject_name || "—"}</p>
               <p className="text-sm text-green-600">{data.best_subject?.mean_score}%</p>
             </div>
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">Worst Subject</p>
-              <p className="text-lg font-semibold text-gray-800">
-                {data.worst_subject?.subject_name || "—"}
-              </p>
+              <p className="text-lg font-semibold text-gray-800">{data.worst_subject?.subject_name || "—"}</p>
               <p className="text-sm text-red-600">{data.worst_subject?.mean_score}%</p>
             </div>
           </div>
-
-          {/* Teacher Performance */}
           <div className="bg-white rounded-xl shadow-sm p-3">
             <h3 className="font-semibold text-gray-800 mb-2">Top Teachers (Value‑Add)</h3>
             {data.top_teachers.length === 0 ? (
@@ -402,7 +445,6 @@ export default function HeadteacherDashboardPage() {
               </ul>
             )}
           </div>
-
           <div className="bg-white rounded-xl shadow-sm p-3">
             <h3 className="font-semibold text-gray-800 mb-2">Needs Support</h3>
             {data.bottom_teachers.length === 0 ? (
@@ -420,8 +462,6 @@ export default function HeadteacherDashboardPage() {
               </ul>
             )}
           </div>
-
-          {/* Attendance Summary */}
           <div className="bg-white rounded-xl shadow-sm p-3">
             <h3 className="font-semibold text-gray-800 mb-2">Attendance</h3>
             <div className="grid grid-cols-4 gap-2 text-center text-sm">
@@ -431,8 +471,6 @@ export default function HeadteacherDashboardPage() {
               <div><p className="text-orange-600 font-bold">{data.attendance_summary.suspended}</p><p className="text-xs text-gray-500">Suspended</p></div>
             </div>
           </div>
-
-          {/* Fee Summary (school‑wide) */}
           <div className="bg-white rounded-xl shadow-sm p-3">
             <h3 className="font-semibold text-gray-800 mb-2">Fees (School‑wide)</h3>
             <div className="flex justify-between text-sm">
@@ -440,8 +478,6 @@ export default function HeadteacherDashboardPage() {
               <span>Cleared: <span className="font-bold text-green-600">{data.fee_cleared_count}</span></span>
             </div>
           </div>
-
-          {/* CBC Weakest Competencies */}
           {data.cbc_weakest_competencies.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm p-3">
               <h3 className="font-semibold text-gray-800 mb-2">Weakest Competencies (CBC)</h3>
@@ -455,13 +491,11 @@ export default function HeadteacherDashboardPage() {
               </ul>
             </div>
           )}
-
-          {/* At‑Risk Students List */}
           {data.risk_sample.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm p-3">
               <h3 className="font-semibold text-gray-800 mb-2">At‑Risk Students</h3>
               <ul className="space-y-1 text-sm">
-                {data.risk_sample.map((s, i) => (
+                {data.risk_sample.map((s: any, i: number) => (
                   <li key={i} className="flex justify-between">
                     <span>{s.student_name}</span>
                     <span className="text-red-600">{s.mean_score}%</span>
