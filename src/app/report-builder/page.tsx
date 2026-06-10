@@ -50,6 +50,11 @@ export default function ReportBuilderPage() {
       router.push("/dashboard");
       return;
     }
+    if (!t.is_premium) {
+      alert("Custom report card builder is a premium feature. Please upgrade to access.");
+      router.push("/dashboard");
+      return;
+    }
     setTeacher(t);
     setSchoolId(t.school_id);
     fetchTemplates(t.school_id);

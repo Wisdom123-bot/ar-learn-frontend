@@ -60,27 +60,29 @@ export default function TimetablePage() {
     }
     const t = JSON.parse(stored);
     setTeacher(t);
-    // Fetch school's classes (via existing endpoint or a generic one; we need GET /schools/{id}/classes)
+    // Fetch school's classes
     if (t.school_id) {
       api.get(`/schools/${t.school_id}/classes`).then((res) => {
-        setClasses(res.data);
-        if (res.data.length > 0) setSelectedClass(res.data[0].id);
+        const classes = res.data || [];
+        setClasses(classes);
+        if (classes.length > 0 && !selectedClass) {
+          setSelectedClass(classes[0].id);
+        }
       }).catch(() => {});
       // Fetch subjects
       api.get("/subjects").then((res) => setSubjects(res.data || [])).catch(() => {});
-      // Fetch teachers in school (we need an endpoint; let's add a quick note to backend later)
-      // For now, we'll just use the logged-in teacher as placeholder; in real Dean scenario, all teachers would be listed.
-      // We'll skip teacher list for now; the form can take a teacher ID manually or just allow selecting from a list if available.
-      // To keep the demo moving, we'll skip the teacher select and just use the current teacher's ID by default.
     }
-  }, [router]);
+  }, [router, selectedClass]);
 
   useEffect(() => {
     if (!selectedClass) return;
     setLoading(true);
     api.get(`/timetable/class/${selectedClass}`)
       .then((res) => setTimetable(res.data))
-      .catch(console.error)
+      .catch((err) => {
+        console.error("Timetable fetch failed:", err);
+        setTimetable([]);
+      })
       .finally(() => setLoading(false));
   }, [selectedClass]);
 
@@ -105,15 +107,22 @@ export default function TimetablePage() {
       setMessage(res.data.message || "Entry added");
       setShowForm(false);
       // Refresh timetable
-      api.get(`/timetable/class/${selectedClass}`).then((r) => setTimetable(r.data));
-    } catch (err: any) {
-      setMessage(err.response?.data?.detail || "Failed");
+      if (selectedClass) {
+        api.get(`/timetable/class/${selectedClass}`).then((r) => setTimetable(r.data));
+      }
+    } catch (err: unknown) {
+      const detail = (err as any).response?.data?.detail;
+      setMessage(detail || "Failed to add entry");
     }
   };
 
   const handleDelete = async (entryId: string) => {
-    await api.delete(`/timetable/${entryId}`);
-    setTimetable((prev) => prev.filter((e) => e.id !== entryId));
+    try {
+      await api.delete(`/timetable/${entryId}`);
+      setTimetable((prev) => prev.filter((e) => e.id !== entryId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   // Group by day

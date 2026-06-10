@@ -107,18 +107,12 @@ export default function AIChatWidget() {
     setLoading(true);
 
     try {
-      const headers: any = {};
-      if (isLoggedIn && teacherId) {
-        headers.Authorization = `Bearer ${teacherId}`;
-      }
-
       const res = await api.post(
         "/ai-assistant/ask",
         {
           school_id: schoolId || "guest",
           question,
-        },
-        { headers }
+        }
       );
       const answer = res.data.answer || "I'm not sure how to answer that.";
       setMessages((prev) => [...prev, { role: "assistant", content: answer }]);

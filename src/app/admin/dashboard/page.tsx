@@ -86,8 +86,25 @@ export default function AdminDashboardPage() {
       return;
     }
     setToken(stored);
-    fetchSchools(stored);
-  }, []);
+
+    const initialFetch = async () => {
+      try {
+        const res = await api.get("/admin/schools", {
+          headers: { Authorization: `Bearer ${stored}` },
+        });
+        setSchools(res.data || []);
+      } catch (err: any) {
+        if (err.response?.status === 403) {
+          localStorage.removeItem("admin_token");
+          router.push("/admin/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initialFetch();
+  }, [router]);
 
   const fetchSchools = async (authToken: string) => {
     try {
@@ -112,6 +129,14 @@ export default function AdminDashboardPage() {
       });
       setBannedIps(res.data || []);
     } catch {}
+  };
+
+  const handleShowBanned = () => {
+    const newState = !showBanned;
+    setShowBanned(newState);
+    if (newState) {
+      fetchBannedIps();
+    }
   };
 
   const handlePremium = async (schoolId: string, activate: boolean) => {
@@ -218,7 +243,7 @@ export default function AdminDashboardPage() {
   Send Update
 </button>
           <button
-            onClick={() => { setShowBanned(!showBanned); if (!showBanned) fetchBannedIps(); }}
+            onClick={handleShowBanned}
             className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
           >
             {showBanned ? "Hide Banned IPs" : "Banned IPs"}
@@ -332,8 +357,13 @@ export default function AdminDashboardPage() {
                     )}
                   </div>
                   <p className="text-sm text-gray-400">
-                    {school.county} · {school.student_count} students · {school.teacher_count} teachers
+                    {school.county} • {school.student_count} students • {school.teacher_count} teachers
                   </p>
+                  {school.email && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {school.email} • {school.phone}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500 mt-0.5">
                     Joined: {new Date(school.created_at).toLocaleDateString()}
                   </p>
@@ -351,12 +381,6 @@ export default function AdminDashboardPage() {
                   >
                     {school.is_active ? "Suspend" : "Reactivate"}
                   </button>
-                  <p className="text-sm text-gray-400">
-  {school.county} · {school.student_count} students · {school.teacher_count} teachers
-</p>
-{school.email && (
-  <p className="text-xs text-gray-500">{school.email} · {school.phone}</p>
-)}
                   <button
                     onClick={() => handlePremium(school.id, !school.is_premium)}
                     className={`px-3 py-1.5 text-sm rounded-lg font-medium ${school.is_premium ? "bg-purple-700 text-purple-200 hover:bg-purple-600" : "bg-gray-700 text-gray-200 hover:bg-gray-600"}`}

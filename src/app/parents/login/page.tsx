@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import BackButton from "@/components/BackButton";
 
 export default function ParentLoginPage() {
   const router = useRouter();
@@ -47,6 +48,9 @@ export default function ParentLoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="absolute top-4 left-4">
+        <BackButton />
+      </div>
       <div className="w-full max-w-sm bg-white p-6 rounded-2xl shadow-lg">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-1">Parent Portal</h1>
         <p className="text-center text-gray-500 text-sm mb-6">

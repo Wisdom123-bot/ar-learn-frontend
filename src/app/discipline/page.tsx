@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import BackButton from "@/components/BackButton";
 
 interface DisciplineRecord {
   id: string;
@@ -137,8 +138,8 @@ export default function DisciplinePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => router.back()} className="text-gray-500">← Back</button>
+        <div className="flex items-center gap-4 mb-6">
+          <BackButton />
           <h1 className="text-xl font-bold text-gray-800">Discipline Records</h1>
         </div>
 

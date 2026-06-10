@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
+import StudentProfileView from "@/components/StudentProfileView";
+import BackButton from "@/components/BackButton";
 
 interface ParentData {
   student_id: string;
@@ -12,45 +13,10 @@ interface ParentData {
   school_name: string;
 }
 
-interface ResultItem {
-  subject: string;
-  exam_type: string;
-  score: number;
-  remarks: string;
-}
-
-interface AttendanceData {
-  student_name: string;
-  total_days: number;
-  attendance_pct: number;
-  breakdown: {
-    present: number;
-    absent: number;
-    sick: number;
-    suspended: number;
-  };
-}
-
-interface FeeData {
-  student_name: string;
-  term: string;
-  balance: number;
-  cleared: boolean;
-  payments: {
-    amount: number;
-    date: string;
-    receipt_number: string;
-  }[];
-}
-
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [parent, setParent] = useState<ParentData | null>(null);
-  const [results, setResults] = useState<ResultItem[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceData | null>(null);
-  const [fees, setFees] = useState<FeeData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("parent");
@@ -58,34 +24,8 @@ export default function ParentDashboardPage() {
       router.push("/parents/login");
       return;
     }
-    const p = JSON.parse(stored);
-    setParent(p);
-    fetchStudentData(p.student_id, term);
-  }, []);
-
-  const fetchStudentData = async (studentId: string, t: string) => {
-    setLoading(true);
-    try {
-      const [resResults, resAttendance, resFees] = await Promise.all([
-        api.get(`/parents/student/${studentId}/results?term=${encodeURIComponent(t)}`),
-        api.get(`/parents/student/${studentId}/attendance`),
-        api.get(`/parents/student/${studentId}/fees?term=${encodeURIComponent(t)}`),
-      ]);
-      setResults(resResults.data);
-      setAttendance(resAttendance.data);
-      setFees(resFees.data);
-    } catch (err) {
-      console.error("Failed to fetch student data", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownloadReport = () => {
-    if (!parent) return;
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/parents/student/${parent.student_id}/report?term=${encodeURIComponent(term)}`;
-    window.open(url, "_blank");
-  };
+    setParent(JSON.parse(stored));
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("parent");
@@ -95,107 +35,55 @@ export default function ParentDashboardPage() {
   if (!parent) return null;
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-lg mx-auto space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">Welcome, {parent.name}</h1>
-            <p className="text-sm text-gray-500">
-              {parent.school_name} · {parent.class_name}
-            </p>
-            <p className="text-xs text-gray-400">Admission: {parent.admission_number}</p>
+    <main className="min-h-screen bg-gray-50 p-4 md:p-10">
+      <div className="max-w-6xl mx-auto">
+        {/* Parent Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+          <div className="flex items-center gap-5">
+             <BackButton />
+             <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-emerald-50">
+                🏠
+             </div>
+             <div>
+                <h1 className="text-2xl font-black text-gray-900 leading-tight">Parent Portal</h1>
+                <p className="text-gray-500 font-medium">Monitoring {parent.name}'s Academic Journey</p>
+             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-          >
-            Log out
-          </button>
-        </div>
 
-        {/* Term selector */}
-        <div className="bg-white p-3 rounded-xl shadow-sm flex gap-2 items-end">
-          <div className="flex-1">
-            <label className="block text-xs font-medium mb-1">Term</label>
-            <input
-              type="text"
-              value={term}
-              onChange={(e) => {
-                setTerm(e.target.value);
-                fetchStudentData(parent.student_id, e.target.value);
-              }}
-              className="w-full border rounded-lg p-2 text-sm"
-            />
-          </div>
-          <button
-            onClick={handleDownloadReport}
-            className="py-2 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium"
-          >
-            📄 Report Card
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="text-center text-gray-400 py-10">Loading...</div>
-        ) : (
-          <>
-            {/* Results */}
-            <div className="bg-white rounded-xl shadow-sm p-4">
-              <h2 className="font-semibold text-gray-800 mb-3">Results</h2>
-              {results.length === 0 ? (
-                <p className="text-sm text-gray-400">No results for this term yet.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {results.map((r, i) => (
-                    <li key={i} className="flex justify-between text-sm border-b pb-1">
-                      <span>{r.subject} ({r.exam_type})</span>
-                      <span className="font-medium">{r.score}%</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* Attendance */}
-            {attendance && (
-              <div className="bg-white rounded-xl shadow-sm p-4">
-                <h2 className="font-semibold text-gray-800 mb-3">Attendance</h2>
-                <p className="text-sm">Attendance: <span className="font-bold">{attendance.attendance_pct}%</span> ({attendance.total_days} days)</p>
-                <div className="grid grid-cols-4 gap-2 mt-2 text-xs text-center">
-                  <div><span className="text-green-600 font-bold">{attendance.breakdown.present}</span><br />Present</div>
-                  <div><span className="text-red-600 font-bold">{attendance.breakdown.absent}</span><br />Absent</div>
-                  <div><span className="text-yellow-600 font-bold">{attendance.breakdown.sick}</span><br />Sick</div>
-                  <div><span className="text-orange-600 font-bold">{attendance.breakdown.suspended}</span><br />Suspended</div>
+          <div className="flex items-center gap-3">
+             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1.5 flex gap-2">
+                <div className="px-4 py-1.5">
+                   <p className="text-[10px] font-bold text-gray-400 uppercase">Term View</p>
+                   <input
+                      type="text"
+                      value={term}
+                      onChange={e => setTerm(e.target.value)}
+                      className="text-sm font-bold text-gray-800 border-none p-0 focus:ring-0 w-28"
+                   />
                 </div>
-              </div>
-            )}
+                <button
+                  onClick={() => {
+                    const url = `${process.env.NEXT_PUBLIC_API_URL}/parents/student/${parent.student_id}/report?term=${encodeURIComponent(term)}`;
+                    window.open(url, "_blank");
+                  }}
+                  className="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-blue-700 transition"
+                >
+                  Download Report
+                </button>
+             </div>
+             <button
+               onClick={handleLogout}
+               className="p-3 bg-white text-gray-400 rounded-2xl shadow-sm hover:text-rose-500 border border-transparent hover:border-rose-100 transition"
+               title="Log Out"
+             >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+             </button>
+          </div>
+        </div>
 
-            {/* Fees */}
-            {fees && (
-              <div className="bg-white rounded-xl shadow-sm p-4">
-                <h2 className="font-semibold text-gray-800 mb-3">Fees</h2>
-                <p className="text-sm">
-                  Balance: <span className={`font-bold ${fees.cleared ? "text-green-600" : "text-red-600"}`}>
-                    KES {fees.balance.toLocaleString()}
-                  </span>
-                  {fees.cleared && <span className="ml-2 text-green-600 text-xs">(Cleared)</span>}
-                </p>
-                {fees.payments.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-xs font-medium text-gray-600 mb-1">Recent Payments</p>
-                    {fees.payments.slice(0, 5).map((p, i) => (
-                      <div key={i} className="flex justify-between text-xs text-gray-500">
-                        <span>{p.date} · {p.receipt_number}</span>
-                        <span>KES {p.amount.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+        <StudentProfileView studentId={parent.student_id} term={term} />
       </div>
     </main>
   );

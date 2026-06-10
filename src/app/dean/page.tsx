@@ -6,6 +6,26 @@ import api from "@/lib/api";
 import StudentSearch from "@/components/StudentSearch";
 import NotificationBell from "@/components/NotificationBell";
 import TimetableGeneratorModal from "@/components/TimetableGeneratorModal";
+import BackButton from "@/components/BackButton";
+
+interface AttendanceDetail {
+  student_id: string;
+  student_name: string;
+  admission_number: string;
+  class_name: string;
+  status: string;
+  date: string;
+}
+
+interface DisciplineDetail {
+  student_name: string;
+  admission_number: string;
+  class_name: string;
+  category: string;
+  description: string;
+  incident_date: string;
+  action_taken: string;
+}
 
 interface DeanDashboardData {
   attendance_summary: {
@@ -14,11 +34,13 @@ interface DeanDashboardData {
     sick: number;
     suspended: number;
   };
+  attendance_details: Record<string, AttendanceDetail[]>;
   discipline_summary: {
     Minor: number;
     Major: number;
     Positive: number;
   };
+  discipline_details: Record<string, DisciplineDetail[]>;
   attendance_concerns: {
     class_name: string;
     attendance_pct: number;
@@ -38,6 +60,9 @@ export default function DeanDashboardPage() {
   const [term, setTerm] = useState("Term 1 2025");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+
+  // Modal for details
+  const [detailModal, setDetailModal] = useState<{ title: string; type: 'attendance' | 'discipline', data: any[] } | null>(null);
 
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -130,9 +155,7 @@ export default function DeanDashboardPage() {
                 </div>
               )}
             </div>
-            <button onClick={() => router.back()} className="text-gray-500 text-sm">
-              ← Back
-            </button>
+            <BackButton />
           </div>
         </div>
 
@@ -209,7 +232,10 @@ export default function DeanDashboardPage() {
           <div className="space-y-4">
             {/* School-wide Attendance & Discipline */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-xl shadow-sm p-4">
+              <div
+                onClick={() => setDetailModal({ title: "Attendance Details", type: 'attendance', data: Object.values(data.attendance_details).flat() })}
+                className="bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:border-blue-300 border border-transparent transition"
+              >
                 <h2 className="font-semibold text-gray-800 mb-3">Attendance Overview</h2>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
@@ -230,7 +256,10 @@ export default function DeanDashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-sm p-4">
+              <div
+                onClick={() => setDetailModal({ title: "Discipline Details", type: 'discipline', data: Object.values(data.discipline_details).flat() })}
+                className="bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:border-blue-300 border border-transparent transition"
+              >
                 <h2 className="font-semibold text-gray-800 mb-3">Discipline Overview</h2>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
@@ -248,6 +277,89 @@ export default function DeanDashboardPage() {
                 </div>
               </div>
             </div>
+
+            {/* Attendance Drill-down Modal */}
+            {detailModal && (
+              <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+                  <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                    <h2 className="font-bold text-lg">{detailModal.title}</h2>
+                    <button onClick={() => setDetailModal(null)} className="text-gray-500 hover:text-black">✕</button>
+                  </div>
+                  <div className="p-4 overflow-y-auto">
+                    {detailModal.data.length === 0 ? (
+                      <p className="text-center text-gray-500 py-10">No records found.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-600">
+                          {detailModal.type === 'attendance' ? (
+                            <tr>
+                              <th className="p-2 text-left">Student</th>
+                              <th className="p-2 text-left">Class</th>
+                              <th className="p-2 text-left">Date</th>
+                              <th className="p-2 text-left">Status</th>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <th className="p-2 text-left">Student</th>
+                              <th className="p-2 text-left">Class</th>
+                              <th className="p-2 text-left">Date</th>
+                              <th className="p-2 text-left">Description</th>
+                            </tr>
+                          )}
+                        </thead>
+                        <tbody className="divide-y">
+                          {detailModal.data.map((item, i) => (
+                            <tr key={i} className="hover:bg-gray-50">
+                              {detailModal.type === 'attendance' ? (
+                                <>
+                                  <td className="p-2">
+                                    <p className="font-medium">{item.student_name}</p>
+                                    <p className="text-[10px] text-gray-400">{item.admission_number}</p>
+                                  </td>
+                                  <td className="p-2">{item.class_name}</td>
+                                  <td className="p-2 text-xs">{item.date}</td>
+                                  <td className="p-2">
+                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                       item.status?.toLowerCase() === 'present' ? 'bg-green-100 text-green-700' :
+                                       item.status?.toLowerCase() === 'absent' ? 'bg-red-100 text-red-700' :
+                                       item.status?.toLowerCase() === 'sick' ? 'bg-yellow-100 text-yellow-700' :
+                                       'bg-orange-100 text-orange-700'
+                                     }`}>
+                                       {item.status}
+                                     </span>
+                                  </td>
+                                </>
+                              ) : (
+                                <>
+                                  <td className="p-2">
+                                    <p className="font-medium">{item.student_name}</p>
+                                    <p className="text-[10px] text-gray-400">{item.admission_number}</p>
+                                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${
+                                      item.category === 'Major' ? 'bg-red-100 text-red-700' :
+                                      item.category === 'Minor' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
+                                    }`}>
+                                      {item.category}
+                                    </span>
+                                  </td>
+                                  <td className="p-2">{item.class_name}</td>
+                                  <td className="p-2 text-xs">{item.incident_date}</td>
+                                  <td className="p-2 text-xs">
+                                     <p className="font-medium text-gray-700">{item.description}</p>
+                                     {item.action_taken && <p className="text-gray-400 mt-1 italic">Action: {item.action_taken}</p>}
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Attendance Concerns */}
             <div className="bg-white rounded-xl shadow-sm p-4">

@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import StudentSearch from "@/components/StudentSearch";
 import NotificationBell from "@/components/NotificationBell";
 import TimetableGeneratorModal from "@/components/TimetableGeneratorModal";
+import BackButton from "@/components/BackButton";
 
 interface DashboardData {
   school_mean: number;
@@ -17,10 +18,11 @@ interface DashboardData {
   top_teachers: any[];
   bottom_teachers: any[];
   risk_student_count: number;
-  risk_sample: { student_name: string; mean_score: number }[];
+  risk_sample: { student_id: string; student_name: string; mean_score: number }[];
   attendance_summary: { present: number; absent: number; sick: number; suspended: number };
   fee_outstanding: number;
   fee_cleared_count: number;
+  fee_previous_term_outstanding: number;
   cbc_weakest_competencies: { competency: string; BE: number; AE: number }[];
 }
 
@@ -47,6 +49,8 @@ export default function HeadteacherDashboardPage() {
   const [termFeeAmount, setTermFeeAmount] = useState(0);
   const [deficit, setDeficit] = useState({ term_fee: 0, deficit: 0, total_expected: 0, total_collected: 0 });
   const [showFeeSettings, setShowFeeSettings] = useState(false);
+  const [defaulters, setDefaulters] = useState<{ current_term: any[]; previous_term: any[] } | null>(null);
+  const [showDefaulters, setShowDefaulters] = useState(false);
 
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -126,10 +130,23 @@ export default function HeadteacherDashboardPage() {
   const handleSetTermFee = async () => {
     try {
       await api.post("/fees/term-fee", { amount: parseFloat(termFee) || 0 }, { params: { school_id: schoolId, term } });
+      setMessage("Term fee updated successfully.");
       fetchTermFee();
       fetchDeficit();
     } catch (err: any) {
       alert(err.response?.data?.detail || "Failed to set term fee");
+    }
+  };
+
+  const fetchDefaulters = async () => {
+    try {
+      const res = await api.get("/fees/defaulters", {
+        params: { school_id: schoolId, current_term: term, previous_term: previousTerm },
+      });
+      setDefaulters(res.data);
+      setShowDefaulters(true);
+    } catch (err: any) {
+      alert("Failed to load defaulters list");
     }
   };
 
@@ -232,9 +249,7 @@ export default function HeadteacherDashboardPage() {
               </div>
             )}
           </div>
-          <button onClick={() => router.push("/dashboard")} className="text-gray-500 text-sm">
-            ← Main Dashboard
-          </button>
+          <BackButton />
         </div>
       </div>
 
@@ -473,11 +488,92 @@ export default function HeadteacherDashboardPage() {
           </div>
           <div className="bg-white rounded-xl shadow-sm p-3">
             <h3 className="font-semibold text-gray-800 mb-2">Fees (School‑wide)</h3>
-            <div className="flex justify-between text-sm">
-              <span>Outstanding: <span className="font-bold text-red-600">KES {data.fee_outstanding.toLocaleString()}</span></span>
-              <span>Cleared: <span className="font-bold text-green-600">{data.fee_cleared_count}</span></span>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>This Term Outstanding:</span>
+                <span className="font-bold text-red-600">KES {data.fee_outstanding.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Last Term Outstanding:</span>
+                <span className="font-bold text-orange-600">KES {data.fee_previous_term_outstanding.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Students Cleared:</span>
+                <span className="font-bold text-green-600">{data.fee_cleared_count}</span>
+              </div>
+              <button
+                onClick={fetchDefaulters}
+                className="w-full mt-2 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200"
+              >
+                View Defaulters List
+              </button>
             </div>
           </div>
+
+          {showDefaulters && defaulters && (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 text-black">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Defaulters Breakdown</h2>
+                  <button onClick={() => setShowDefaulters(false)} className="text-gray-500 text-xl">✕</button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold text-red-600 border-b pb-1 mb-2">Current Term ({term})</h4>
+                    {defaulters.current_term.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic">No defaulters found for this term.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500 border-b">
+                            <th className="pb-2">Name</th>
+                            <th className="pb-2">Class</th>
+                            <th className="pb-2 text-right">Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {defaulters.current_term.map((d, i) => (
+                            <tr key={i} className="border-b last:border-0">
+                              <td className="py-2">{d.student_name} <span className="text-xs text-gray-400">({d.admission_number})</span></td>
+                              <td className="py-2">{d.class_name}</td>
+                              <td className="py-2 text-right font-medium">KES {d.balance.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold text-orange-600 border-b pb-1 mb-2">Last Term ({previousTerm})</h4>
+                    {defaulters.previous_term.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic">No outstanding balances from the last term.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500 border-b">
+                            <th className="pb-2">Name</th>
+                            <th className="pb-2">Class</th>
+                            <th className="pb-2 text-right">Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {defaulters.previous_term.map((d, i) => (
+                            <tr key={i} className="border-b last:border-0">
+                              <td className="py-2">{d.student_name} <span className="text-xs text-gray-400">({d.admission_number})</span></td>
+                              <td className="py-2">{d.class_name}</td>
+                              <td className="py-2 text-right font-medium">KES {d.balance.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {data.cbc_weakest_competencies.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm p-3">
               <h3 className="font-semibold text-gray-800 mb-2">Weakest Competencies (CBC)</h3>
@@ -496,12 +592,22 @@ export default function HeadteacherDashboardPage() {
               <h3 className="font-semibold text-gray-800 mb-2">At‑Risk Students</h3>
               <ul className="space-y-1 text-sm">
                 {data.risk_sample.map((s: any, i: number) => (
-                  <li key={i} className="flex justify-between">
-                    <span>{s.student_name}</span>
-                    <span className="text-red-600">{s.mean_score}%</span>
+                  <li key={i} className="flex justify-between items-center py-1">
+                    <button
+                      onClick={() => {
+                        setSearchAdm(s.student_id); // Using ID for search fallback
+                        setShowFeePanel(true);
+                        // Force a scroll to the fee panel or just use the student search component
+                      }}
+                      className="text-blue-600 hover:underline text-left"
+                    >
+                      {s.student_name}
+                    </button>
+                    <span className="text-red-600 font-medium">{s.mean_score}%</span>
                   </li>
                 ))}
               </ul>
+              <p className="text-[10px] text-gray-400 mt-2 italic">* Click a name to manage their fees/admissions</p>
             </div>
           )}
         </div>

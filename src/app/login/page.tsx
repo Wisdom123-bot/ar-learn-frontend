@@ -2,19 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 import api from "@/lib/api";
-
-interface School {
-  id: string;
-  name: string;
-  county: string;
-}
+import { SchoolSchema, TeacherSchema, type School, type Teacher } from "@/lib/schemas";
 
 const ROLES = [
   { value: "headteacher", label: "Headteacher" },
   { value: "dean", label: "Dean of Students" },
   { value: "teacher", label: "Teacher" },
 ];
+
 
 export default function UnifiedLoginPage() {
   const router = useRouter();
@@ -34,22 +31,44 @@ export default function UnifiedLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Security: Brute-force protection
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+
+  // Check lockout on mount and when lockoutUntil changes
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (lockoutUntil) {
+      const now = Date.now();
+      if (now >= lockoutUntil) {
+        setLockoutUntil(null);
+        setFailedAttempts(0);
+      } else {
+        timer = setTimeout(() => {
+          setLockoutUntil(null);
+          setFailedAttempts(0);
+        }, lockoutUntil - now);
+      }
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [lockoutUntil]);
+
   // ---------- Auto‑login if session exists ----------
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (stored) {
       try {
-        const user = JSON.parse(stored);
-        // Minimal validation: must have teacher_id and role
-        if (user.teacher_id && user.role) {
-          if (user.role === "headteacher") {
-            router.push("/headteacher/dashboard");
-          } else {
-            router.push("/dashboard");
-          }
+        const parsed = JSON.parse(stored);
+        const user = TeacherSchema.parse(parsed);
+        if (user.role === "headteacher") {
+          router.push("/headteacher/dashboard");
+        } else {
+          router.push("/dashboard");
         }
-      } catch {
-        // corrupted data – ignore
+      } catch (err) {
+        console.error("Session validation failed:", err);
         localStorage.removeItem("teacher");
       }
     }
@@ -63,8 +82,11 @@ export default function UnifiedLoginPage() {
       const res = await api.get("/auth/schools/search", {
         params: { name: schoolQuery.trim() },
       });
-      setSchools(res.data || []);
-    } catch {
+      // Validate array of schools
+      const validatedSchools = z.array(SchoolSchema).parse(res.data);
+      setSchools(validatedSchools);
+    } catch (err) {
+      console.error("School search validation failed:", err);
       setSchools([]);
     } finally {
       setSearching(false);
@@ -82,6 +104,13 @@ export default function UnifiedLoginPage() {
   // Submit login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Brute-force check
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      setError(`Too many failed attempts. Try again in ${Math.ceil((lockoutUntil - Date.now()) / 1000)} seconds.`);
+      return;
+    }
+
     if (!selectedSchool || !selectedRole || !teacherCode.trim()) {
       setError("Please complete all fields.");
       return;
@@ -95,21 +124,34 @@ export default function UnifiedLoginPage() {
         teacher_code: teacherCode.trim().toUpperCase(),
       });
 
-      const user = {
+      // Validate response with Zod
+      const user = TeacherSchema.parse({
         ...res.data,
         role: selectedRole,
         school_name: selectedSchool.name,
-      };
+      });
+
       localStorage.setItem("teacher", JSON.stringify(user));
+      setFailedAttempts(0); // Reset on success
 
       // Redirect based on role
-      if (selectedRole === "headteacher") {
+      if (user.role === "headteacher") {
         router.push("/headteacher/dashboard");
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Login failed. Check your details.");
+    } catch (err: unknown) {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+
+      if (newAttempts >= 5) {
+        const lockoutTime = Date.now() + 30000; // 30 seconds lockout
+        setLockoutUntil(lockoutTime);
+        setError("Too many failed attempts. You are locked out for 30 seconds.");
+      } else {
+        const detail = (err as any).response?.data?.detail;
+        setError(detail || "Login failed. Check your details.");
+      }
     } finally {
       setLoading(false);
     }
@@ -225,10 +267,10 @@ export default function UnifiedLoginPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (lockoutUntil !== null)}
                   className="w-full py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  {loading ? "Signing in..." : "Sign In"}
+                  {loading ? "Signing in..." : lockoutUntil !== null ? "Locked Out" : "Sign In"}
                 </button>
 
                 <button

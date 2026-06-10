@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import ClassCategorizedList from "@/components/ClassCategorizedList";
 
 interface Student {
   id: string;
@@ -73,32 +74,7 @@ export default function StudentListPage() {
           ) : filtered.length === 0 ? (
             <p className="text-center text-gray-400 py-10">No students found.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="text-left p-2">Name</th>
-                    <th className="text-left p-2">Admission No</th>
-                    <th className="text-left p-2">Class</th>
-                    <th className="text-left p-2">Access Code</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((s) => (
-                    <tr
-                      key={s.id}
-                      onClick={() => router.push(`/students/${s.id}`)}
-                      className="border-t hover:bg-gray-50 cursor-pointer"
-                    >
-                      <td className="p-2 font-medium">{s.name}</td>
-                      <td className="p-2 font-mono text-xs">{s.admission_number}</td>
-                      <td className="p-2">{s.class_name}</td>
-                      <td className="p-2 font-mono text-xs text-blue-600">{s.access_code}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ClassCategorizedList students={filtered} />
           )}
         </div>
       </div>

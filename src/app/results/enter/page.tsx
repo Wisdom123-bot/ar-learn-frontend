@@ -1,22 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
-
-interface Assignment {
-  class_id: string;
-  class_name: string;
-  subject_id: string;
-  subject_name: string;
-  is_class_teacher: boolean;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  admission_number: string;
-}
+import api, { validatedGet } from "@/lib/api";
+import BackButton from "@/components/BackButton";
+import { TeacherSchema, AssignmentSchema, StudentSchema, type Assignment, type Teacher } from "@/lib/schemas";
+import { z } from "zod";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { useQuery } from "@tanstack/react-query";
 
 interface ResultRow {
   student_id: string;
@@ -28,10 +19,8 @@ const PAGE_SIZE = 50;
 
 export default function EnterResultsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
   const [results, setResults] = useState<ResultRow[]>([]);
   const [examType, setExamType] = useState("CAT");
   const [term, setTerm] = useState("Term 1 2025");
@@ -47,31 +36,72 @@ export default function EnterResultsPage() {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    api.get(`/teachers/${t.teacher_id}/assignments`).then((res) => {
-      setAssignments(res.data);
-      if (res.data.length > 0) setSelectedAssignment(res.data[0]);
-    }).catch(console.error);
+    try {
+      setTeacher(TeacherSchema.parse(JSON.parse(stored)));
+    } catch (e) {
+      console.error("Failed to parse teacher from storage", e);
+      router.push("/login");
+    }
   }, [router]);
 
+  // TanStack Query for Assignments
+  const { data: assignments = [] } = useQuery({
+    queryKey: ["assignments", teacher?.teacher_id],
+    queryFn: () => validatedGet(`/teachers/${teacher?.teacher_id}/assignments`, z.array(AssignmentSchema)),
+    enabled: !!teacher?.teacher_id,
+  });
+
   useEffect(() => {
-    if (!selectedAssignment || !teacher) return;
-    api.get(`/teachers/${teacher.teacher_id}/students`)
-      .then((res) => {
-        const classStudents = res.data.filter((s: any) => s.class_id === selectedAssignment.class_id);
-        setStudents(classStudents);
-        setResults(
-          classStudents.map((s: any) => ({
-            student_id: s.id,
-            score: "",
-            remarks: "",
-          }))
-        );
-        setCurrentPage(0);  // reset to first page when class changes
-      })
-      .catch(console.error);
-  }, [selectedAssignment, teacher]);
+    if (assignments.length > 0 && !selectedAssignment) {
+      setSelectedAssignment(assignments[0]);
+    }
+  }, [assignments, selectedAssignment]);
+
+  // TanStack Query for Students
+  const { data: allStudents = [], isLoading: isLoadingStudents } = useQuery({
+    queryKey: ["students", teacher?.teacher_id],
+    queryFn: () => validatedGet(`/teachers/${teacher?.teacher_id}/students`, z.array(StudentSchema)),
+    enabled: !!teacher?.teacher_id,
+  });
+
+  const students = useMemo(() => {
+    if (!selectedAssignment) return [];
+    return allStudents.filter((s) => s.class_id === selectedAssignment.class_id);
+  }, [allStudents, selectedAssignment]);
+
+  useEffect(() => {
+    setResults(
+      students.map((s) => ({
+        student_id: s.id,
+        score: "",
+        remarks: "",
+      }))
+    );
+    setCurrentPage(0);
+  }, [students]);
+
+  // Distribution Data for Visualization
+  const distributionData = useMemo(() => {
+    const bins = [
+      { name: "0-20", count: 0, color: "#ef4444" },
+      { name: "21-40", count: 0, color: "#f97316" },
+      { name: "41-60", count: 0, color: "#eab308" },
+      { name: "61-80", count: 0, color: "#22c55e" },
+      { name: "81-100", count: 0, color: "#3b82f6" },
+    ];
+
+    results.forEach((r) => {
+      const s = parseFloat(r.score);
+      if (isNaN(s)) return;
+      if (s <= 20) bins[0].count++;
+      else if (s <= 40) bins[1].count++;
+      else if (s <= 60) bins[2].count++;
+      else if (s <= 80) bins[3].count++;
+      else bins[4].count++;
+    });
+
+    return bins;
+  }, [results]);
 
   // Filter students based on search query
   const filteredStudents = students.filter(
@@ -89,7 +119,6 @@ export default function EnterResultsPage() {
     if (page >= 0 && page < totalPages) setCurrentPage(page);
   };
 
-  // Ensure current page is valid when filteredStudents changes
   useEffect(() => {
     if (currentPage >= totalPages) {
       setCurrentPage(Math.max(0, totalPages - 1));
@@ -97,6 +126,9 @@ export default function EnterResultsPage() {
   }, [filteredStudents.length, totalPages, currentPage]);
 
   const handleScoreChange = (studentId: string, value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && (numValue < 0 || numValue > 100)) return;
+
     setResults((prev) =>
       prev.map((r) => (r.student_id === studentId ? { ...r, score: value } : r))
     );
@@ -121,6 +153,8 @@ export default function EnterResultsPage() {
       return;
     }
 
+    if (!teacher || !selectedAssignment) return;
+
     const payload = {
       teacher_id: teacher.teacher_id,
       term,
@@ -137,8 +171,9 @@ export default function EnterResultsPage() {
     try {
       const res = await api.post("/results/submit", payload);
       setMessage(res.data.message || "Results submitted!");
-    } catch (err: any) {
-      setMessage(err.response?.data?.detail || "Submission failed");
+    } catch (err: unknown) {
+      const detail = (err as any).response?.data?.detail;
+      setMessage(detail || "Submission failed");
     } finally {
       setLoading(false);
     }
@@ -149,127 +184,192 @@ export default function EnterResultsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 text-black">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-black font-medium">
-          ← Back
-        </button>
-        <h1 className="text-xl font-bold text-black">Enter Results</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <BackButton />
+        <h1 className="text-xl font-bold text-black" aria-level={1}>Enter Results</h1>
       </div>
 
-      {/* Selector: Class & Subject */}
-      <div className="bg-white p-4 rounded-xl shadow-sm mb-4 space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">Class & Subject</label>
-          <select
-            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
-            value={selectedAssignment ? `${selectedAssignment.class_id}|${selectedAssignment.subject_id}` : ""}
-            onChange={(e) => {
-              const [class_id, subject_id] = e.target.value.split("|");
-              const found = assignments.find(
-                (a) => a.class_id === class_id && a.subject_id === subject_id
-              );
-              setSelectedAssignment(found || null);
-            }}
-          >
-            {assignments.map((a) => (
-              <option key={`${a.class_id}|${a.subject_id}`} value={`${a.class_id}|${a.subject_id}`}>
-                {a.class_name} – {a.subject_name}
-              </option>
-            ))}
-          </select>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Selector: Class & Subject */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm space-y-4 border border-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Exam Details</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Class & Subject</label>
+              <select
+                aria-label="Select Class and Subject"
+                className="w-full border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-black focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                value={selectedAssignment ? `${selectedAssignment.class_id}|${selectedAssignment.subject_id}` : ""}
+                onChange={(e) => {
+                  const [class_id, subject_id] = e.target.value.split("|");
+                  const found = assignments.find(
+                    (a) => a.class_id === class_id && a.subject_id === subject_id
+                  );
+                  setSelectedAssignment(found || null);
+                }}
+              >
+                {assignments.map((a) => (
+                  <option key={`${a.class_id}|${a.subject_id}`} value={`${a.class_id}|${a.subject_id}`}>
+                    {a.class_name} – {a.subject_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Exam Type</label>
+                <select
+                  aria-label="Select Exam Type"
+                  value={examType}
+                  onChange={(e) => setExamType(e.target.value)}
+                  className="w-full border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-black focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                >
+                  <option value="CAT">CAT</option>
+                  <option value="EXAM">EXAM</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Term</label>
+                <input
+                  aria-label="Analysis Term"
+                  type="text"
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
+                  className="w-full border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                  placeholder="e.g. Term 1 2025"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Academic Year</label>
+              <input
+                aria-label="Academic Year"
+                type="text"
+                value={academicYear}
+                onChange={(e) => setAcademicYear(e.target.value)}
+                className="w-full border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                placeholder="2025"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Search Student</label>
+              <input
+                aria-label="Search students by name or admission number"
+                type="text"
+                placeholder="Name or admission number..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="w-full border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">Exam Type</label>
-            <select
-              value={examType}
-              onChange={(e) => setExamType(e.target.value)}
-              className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
-            >
-              <option value="CAT">CAT</option>
-              <option value="EXAM">EXAM</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">Term</label>
-            <input
-              type="text"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
-              placeholder="e.g. Term 1 2025"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">Academic Year</label>
-          <input
-            type="text"
-            value={academicYear}
-            onChange={(e) => setAcademicYear(e.target.value)}
-            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
-            placeholder="2025"
-          />
-        </div>
-
-        {/* Search Student */}
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">Search Student</label>
-          <input
-            type="text"
-            placeholder="Type name or admission number..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(0);  // reset to first page on new search
-            }}
-            className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black placeholder-gray-400"
-          />
+        {/* Real-time Visualization */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100" role="region" aria-label="Score Distribution Chart">
+           <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                 <div className="h-2 w-2 bg-emerald-500 rounded-full"></div>
+                 <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Live Insights</h2>
+              </div>
+              <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase">Distribution</span>
+           </div>
+           <div className="h-40 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={distributionData} aria-label="Score Distribution Bar Chart">
+                   <XAxis dataKey="name" hide />
+                   <Tooltip
+                      cursor={{fill: '#f8fafc'}}
+                      contentStyle={{borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 'bold'}}
+                   />
+                   <Bar dataKey="count" radius={[4, 4, 0, 0]} aria-label="Count per score range">
+                      {distributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                   </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+           </div>
+           <div className="mt-4 flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+              <span>Fail</span>
+              <span>Average</span>
+              <span>Excellent</span>
+           </div>
         </div>
       </div>
 
-      {/* Students Table with Pagination */}
-      {filteredStudents.length > 0 ? (
+      {/* Students Table */}
+      {isLoadingStudents ? (
+        <div className="flex items-center justify-center py-20" aria-busy="true">
+           <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : filteredStudents.length > 0 ? (
         <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-            <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 400px)" }}>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 sticky top-0">
+          <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-4 border border-gray-100">
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 450px)" }}>
+              <table className="w-full text-sm border-collapse" aria-label="Students results entry table">
+                <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
-                    <th className="text-left p-2 font-medium text-black">Student</th>
-                    <th className="w-20 p-2 font-medium text-black">Score</th>
-                    <th className="w-40 p-2 font-medium text-black">Remarks</th>
+                    <th className="text-left p-4 font-bold text-gray-500 uppercase text-[10px] tracking-widest border-b">Student</th>
+                    <th className="w-28 p-4 font-bold text-gray-500 uppercase text-[10px] tracking-widest border-b text-center">Score</th>
+                    <th className="p-4 font-bold text-gray-500 uppercase text-[10px] tracking-widest border-b">Remarks</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-50">
                   {paginatedStudents.map((student) => {
                     const resultRow = results.find((r) => r.student_id === student.id);
                     if (!resultRow) return null;
+                    const scoreNum = parseFloat(resultRow.score);
+                    const scoreColor = isNaN(scoreNum) ? "bg-gray-100" :
+                                     scoreNum < 40 ? "bg-red-100 text-red-600" :
+                                     scoreNum < 70 ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
+
                     return (
-                      <tr key={student.id} className="border-t">
-                        <td className="p-2">
-                          <p className="font-medium text-black">{student.name}</p>
-                          <p className="text-xs text-black">{student.admission_number}</p>
+                      <tr key={student.id} className="hover:bg-blue-50/20 transition-colors group">
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-xs font-black text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                              {student.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-900">{student.name}</p>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{student.admission_number}</p>
+                            </div>
+                          </div>
                         </td>
-                        <td className="p-2">
-                          <input
-                            type="number"
-                            value={resultRow.score}
-                            onChange={(e) => handleScoreChange(student.id, e.target.value)}
-                            className="w-full border border-gray-500 rounded-lg p-1.5 text-center text-sm text-black"
-                            min="0"
-                            max="100"
-                            placeholder="0"
-                          />
+                        <td className="p-4">
+                          <div className="relative">
+                            <input
+                              aria-label={`Score for ${student.name}`}
+                              type="number"
+                              value={resultRow.score}
+                              onChange={(e) => handleScoreChange(student.id, e.target.value)}
+                              className={`w-full border-none rounded-xl p-2.5 text-center text-sm font-black focus:ring-2 focus:ring-blue-500 outline-none transition-all ${scoreColor}`}
+                              min="0"
+                              max="100"
+                              placeholder="-"
+                            />
+                          </div>
                         </td>
-                        <td className="p-2">
+                        <td className="p-4">
                           <input
+                            aria-label={`Remarks for ${student.name}`}
                             type="text"
                             value={resultRow.remarks}
                             onChange={(e) => handleRemarksChange(student.id, e.target.value)}
-                            className="w-full border border-gray-500 rounded-lg p-1.5 text-sm text-black placeholder-gray-400"
-                            placeholder="Optional"
+                            className="w-full bg-gray-50 border border-transparent rounded-xl p-2.5 text-sm text-gray-700 placeholder-gray-300 focus:bg-white focus:border-gray-200 focus:ring-0 outline-none transition-all"
+                            placeholder="Add observation..."
                           />
                         </td>
                       </tr>
@@ -282,33 +382,45 @@ export default function EnterResultsPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mb-4">
+            <nav className="flex items-center justify-between mb-6 px-2" aria-label="Pagination">
               <button
                 type="button"
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 0}
-                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-600 rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-all"
               >
-                ← Previous
+                <span>←</span> Previous
               </button>
-              <span className="text-sm text-black">
-                Page {currentPage + 1} of {totalPages}
-              </span>
+              <div className="flex gap-1">
+                 {Array.from({length: totalPages}).map((_, i) => (
+                   <button
+                      key={i}
+                      type="button"
+                      aria-current={currentPage === i ? "page" : undefined}
+                      aria-label={`Go to page ${i + 1}`}
+                      onClick={() => goToPage(i)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === i ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'}`}
+                   >
+                      {i + 1}
+                   </button>
+                 ))}
+              </div>
               <button
                 type="button"
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage >= totalPages - 1}
-                className="px-3 py-1 text-sm bg-gray-200 text-black rounded disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-600 rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-all"
               >
-                Next →
+                Next <span>→</span>
               </button>
-            </div>
+            </nav>
           )}
 
           {message && (
-            <div className={`p-3 rounded-lg mb-4 text-sm ${
-              message.toLowerCase().includes("failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
-            }`}>
+            <div className={`p-4 rounded-2xl mb-6 text-xs font-bold flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 ${
+              message.toLowerCase().includes("failed") ? "bg-red-50 text-red-600 border border-red-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+            }`} role="alert">
+              <div className={`h-2 w-2 rounded-full ${message.toLowerCase().includes("failed") ? "bg-red-500" : "bg-emerald-500"}`}></div>
               {message}
             </div>
           )}
@@ -316,15 +428,22 @@ export default function EnterResultsPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-4 bg-gray-900 text-white font-black rounded-2xl hover:bg-blue-600 shadow-xl hover:shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:hover:bg-gray-900"
           >
-            {loading ? "Submitting..." : "Submit Results"}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                 <span>PROCESSING...</span>
+              </div>
+            ) : "SUBMIT RESULTS"}
           </button>
         </form>
       ) : (
-        <p className="text-center text-black py-10">
-          {students.length === 0 ? "No students in this class." : "No students match your search."}
-        </p>
+        <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+           <div className="text-4xl mb-4">🔍</div>
+           <h3 className="text-xl font-bold text-gray-900 mb-1">No matching students</h3>
+           <p className="text-gray-400 text-sm">Check your search query or class selection.</p>
+        </div>
       )}
     </div>
   );

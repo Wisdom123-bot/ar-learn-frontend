@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import NotificationBell from "@/components/NotificationBell";
 import api from "@/lib/api";
 import StudentSearch from "@/components/StudentSearch";
+import OnboardingTour from "@/components/OnboardingTour";
 
 interface Student {
   id: string;
@@ -42,8 +43,15 @@ export default function DashboardPage() {
 
   if (!teacher) return null;
 
+  const onboardingSteps = [
+    { target: "#quick-actions", title: "Quick Actions", content: "Access all your essential tools like Results Entry and Attendance here.", position: "bottom" as const },
+    { target: "#student-list", title: "Student List", content: "View all students assigned to your classes. Click any student to see their deep analytics profile.", position: "top" as const },
+    { target: "#student-search-container", title: "Smart Search", content: "Instantly find any student by name or admission number.", position: "bottom" as const },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <OnboardingTour steps={onboardingSteps} tourKey="teacher_dashboard" />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -51,7 +59,9 @@ export default function DashboardPage() {
           <p className="text-sm text-black">{teacher.school_name}</p>
         </div>
         <div className="flex items-center gap-4">
-          <StudentSearch />
+          <div id="student-search-container">
+            <StudentSearch />
+          </div>
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
           <button
             onClick={handleLogout}
@@ -63,19 +73,26 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+      <div id="quick-actions" className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         {[
           { label: "Enter Results", href: "/results/enter" },
           { label: "Take Attendance", href: "/attendance" },
-          { label: "View Analytics", href: "/analytics" },
+          { label: "Analytics Hub", href: "/analytics" },
           { label: "Risk Alerts", href: "/risk" },
           { label: "Report Cards", href: "/reports" },
           { label: "Fees", href: "/fees" },
-          { label: "Teacher Analytics", href: "/analytics/teachers" },
-          { label: "Headteacher Dashboard", href: "/headteacher/dashboard" },
-          { label: "Class Teacher Hub", href: "/class-teacher" },
-          { label: "Dean Dashboard", href: "/dean" },
-          { label: "Assign Teacher", href: "/assign" },
+          { label: "My Timetable", href: "/timetable" },
+          ...(teacher.role === "headteacher" || teacher.role === "dean"
+            ? [
+                { label: "Teacher Rankings", href: "/analytics/teachers" },
+                { label: "Headteacher Dashboard", href: "/headteacher/dashboard" },
+                { label: "Dean Dashboard", href: "/dean" },
+                { label: "Assign Teacher", href: "/assign" },
+              ]
+            : [
+                { label: "Class Teacher Hub", href: "/class-teacher" },
+              ]
+          ),
         ].map((action) => (
           <button
             key={action.label}
@@ -88,9 +105,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Student List */}
-      <h2 className="text-lg font-semibold text-black mb-3">
-        Your Students ({students.length})
-      </h2>
+      <div id="student-list" className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-semibold text-black">
+          Your Students ({students.length})
+        </h2>
+        {(teacher.role === "headteacher" || teacher.role === "dean") && (
+          <button
+            onClick={() => router.push("/students")}
+            className="text-xs text-blue-600 font-bold uppercase hover:underline"
+          >
+            View All Classes
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="text-center text-black py-10">Loading…</div>
       ) : students.length === 0 ? (
@@ -98,17 +126,28 @@ export default function DashboardPage() {
           No students assigned yet.
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {students.map((s) => (
             <div
               key={s.id}
-              className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center"
+              onClick={() => router.push(`/students/${s.id}`)}
+              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
             >
-              <div>
-                <p className="font-medium text-black">{s.name}</p>
-                <p className="text-xs text-black">
-                  {s.admission_number} · {s.class_name}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                  {s.name.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-black group-hover:text-blue-600 transition-colors">{s.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {s.admission_number} • <span className="text-blue-500 font-medium">{s.class_name}</span>
+                  </p>
+                </div>
+                <div className="text-gray-300 group-hover:text-blue-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
             </div>
           ))}

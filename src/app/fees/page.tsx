@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import BackButton from "@/components/BackButton";
 
 interface FeeStatus {
   student_id: string;
@@ -113,10 +114,8 @@ export default function FeesPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 text-black">
       <div className="max-w-lg mx-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => router.back()} className="text-black font-medium">
-            ← Back
-          </button>
+        <div className="flex items-center gap-4 mb-6">
+          <BackButton />
           <h1 className="text-xl font-bold text-black">Fee Management</h1>
         </div>
 
