@@ -24,6 +24,7 @@ export default function SchoolRegistrationPage() {
   const [deanName, setDeanName] = useState("");
   const [classes, setClasses] = useState<ClassInput[]>([{ name: "", target_mean_score: "" }]);
   const [teacherNames, setTeacherNames] = useState<string[]>([""]);
+  const [subjects, setSubjects] = useState<string[]>(["Mathematics", "English", "Kiswahili", "Science", "Social Studies"]);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,19 @@ export default function SchoolRegistrationPage() {
     setClasses(updated);
   };
 
+  // Subject handlers
+  const addSubjectRow = () => setSubjects([...subjects, ""]);
+  const removeSubjectRow = (index: number) => {
+    if (subjects.length > 1) {
+      setSubjects(subjects.filter((_, i) => i !== index));
+    }
+  };
+  const updateSubject = (index: number, value: string) => {
+    const updated = [...subjects];
+    updated[index] = value;
+    setSubjects(updated);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -90,6 +104,13 @@ export default function SchoolRegistrationPage() {
       return;
     }
 
+    const subjectList = subjects.filter((s) => s.trim() !== "");
+    if (subjectList.length === 0) {
+      setMessage("Please add at least one subject.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       school_name: schoolName.trim(),
       county: county.trim(),
@@ -104,6 +125,7 @@ export default function SchoolRegistrationPage() {
         name: c.name.trim(),
         target_mean_score: parseFloat(c.target_mean_score) || 0,
       })),
+      subjects: subjectList,
     };
 
     try {
@@ -391,6 +413,38 @@ export default function SchoolRegistrationPage() {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Subjects */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-900">School Subjects</label>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setSubjects([])} className="text-xs text-red-600 font-medium">
+                    Clear All
+                  </button>
+                  <button type="button" onClick={addSubjectRow} className="text-xs text-blue-600 font-medium">
+                    + Add Subject
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {subjects.map((subject, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => updateSubject(idx, e.target.value)}
+                      placeholder="e.g. Mathematics"
+                      className="flex-1 border border-gray-500 rounded-lg p-2 text-sm text-gray-900 placeholder-gray-400"
+                      required
+                    />
+                    {subjects.length > 1 && (
+                      <button type="button" onClick={() => removeSubjectRow(idx)} className="text-red-500 text-xs">✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {message && (

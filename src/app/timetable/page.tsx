@@ -70,7 +70,7 @@ export default function TimetablePage() {
         }
       }).catch(() => {});
       // Fetch subjects
-      api.get("/subjects").then((res) => setSubjects(res.data || [])).catch(() => {});
+      api.get("/subjects", { params: { school_id: t.school_id } }).then((res) => setSubjects(res.data || [])).catch(() => {});
     }
   }, [router, selectedClass]);
 

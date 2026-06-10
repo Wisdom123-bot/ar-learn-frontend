@@ -59,7 +59,7 @@ export default function AssignTeacherPage() {
     Promise.all([
       api.get(`/schools/${t.school_id}/teachers`),
       api.get(`/schools/${t.school_id}/classes`),
-      api.get("/subjects"),  // we already have GET /subjects (added earlier)
+      api.get("/subjects", { params: { school_id: t.school_id } }),
     ]).then(([teachersRes, classesRes, subjectsRes]) => {
       setTeachers(teachersRes.data || []);
       setClasses(classesRes.data || []);

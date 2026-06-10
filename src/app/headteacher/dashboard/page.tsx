@@ -368,6 +368,9 @@ export default function HeadteacherDashboardPage() {
               <button onClick={() => router.push("/admissions")} className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium">
                 Admissions
               </button>
+              <button onClick={() => router.push("/headteacher/subjects")} className="px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-medium">
+                Manage Subjects
+              </button>
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
                   <label className="text-xs">New Balance (KES)</label>
