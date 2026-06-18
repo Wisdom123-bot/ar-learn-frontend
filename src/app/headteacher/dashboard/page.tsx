@@ -598,9 +598,7 @@ export default function HeadteacherDashboardPage() {
                   <li key={i} className="flex justify-between items-center py-1">
                     <button
                       onClick={() => {
-                        setSearchAdm(s.student_id); // Using ID for search fallback
-                        setShowFeePanel(true);
-                        // Force a scroll to the fee panel or just use the student search component
+                        router.push(`/students/${s.student_id}`);
                       }}
                       className="text-blue-600 hover:underline text-left"
                     >
