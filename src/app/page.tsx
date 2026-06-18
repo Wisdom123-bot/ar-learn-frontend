@@ -7,6 +7,7 @@ import api from "@/lib/api";
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [stats, setStats] = useState({ total_schools: 0, total_students: 0, uptime: 99.9 });
+  const [selectedFeature, setSelectedFeature] = useState<any>(null);
 
   useEffect(() => {
     api.get("/public/stats")
@@ -188,13 +189,132 @@ export default function HomePage() {
               <p className="text-slate-400 max-w-2xl mx-auto text-lg">Everything you need to run a modern school in Kenya.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <FeatureItem title="Attendance Tracking" desc="Monitor attendance in real time with automated alerts for parents." icon={<AttendanceIcon />} />
-              <FeatureItem title="Smart Analytics" desc="Visual performance dashboards for teachers and headteachers." icon={<AnalyticsIcon />} />
-              <FeatureItem title="Parent Portal" desc="Instant access to results, fees, and disciplinary records." icon={<ParentIcon />} />
-              <FeatureItem title="Fee Management" desc="Track payments, generate invoices, and send balance reminders." icon={<FeeIcon />} />
+              <FeatureItem
+                title="Attendance Tracking"
+                desc="Monitor attendance in real time with automated alerts for parents."
+                icon={<AttendanceIcon />}
+                onClick={() => setSelectedFeature({
+                  title: "Attendance Tracking",
+                  icon: <AttendanceIcon />,
+                  fullDesc: "Real-time monitoring of student presence using mobile and web interfaces.",
+                  details: [
+                    { label: "Automated Alerts", text: "Instantly notify parents via SMS or App notifications when a student is marked absent or arrives late." },
+                    { label: "Biometric Integration", text: "Support for digital attendance logs that can be synced with biometric devices if available." },
+                    { label: "Trend Analysis", text: "Identify patterns of chronic absenteeism early to intervene before academic performance is affected." },
+                    { label: "Teacher Accountability", text: "Log exactly when and by whom attendance was taken for every lesson." }
+                  ]
+                })}
+              />
+              <FeatureItem
+                title="Smart Analytics"
+                desc="Visual performance dashboards for teachers and headteachers."
+                icon={<AnalyticsIcon />}
+                onClick={() => setSelectedFeature({
+                  title: "Smart Analytics",
+                  icon: <AnalyticsIcon />,
+                  fullDesc: "Data-driven insights to improve student outcomes and teacher efficiency.",
+                  details: [
+                    { label: "Predictive Risk Modeling", text: "Our AI identifies students at risk of dropping out or failing based on historical trends and current performance." },
+                    { label: "Value-Add Tracking", text: "Measure teacher impact by comparing student performance at the start of the term vs the end, accounting for entry behavior." },
+                    { label: "CBC Competency Mapping", text: "Visual maps of student strengths across various competencies, helping teachers focus on specific learning gaps." },
+                    { label: "Comparative Benchmarking", text: "Compare your school's performance against regional averages or previous years' data." }
+                  ]
+                })}
+              />
+              <FeatureItem
+                title="Parent Portal"
+                desc="Instant access to results, fees, and disciplinary records."
+                icon={<ParentIcon />}
+                onClick={() => setSelectedFeature({
+                  title: "Parent Portal",
+                  icon: <ParentIcon />,
+                  fullDesc: "A transparent window into the student's academic life for guardians.",
+                  details: [
+                    { label: "Real-Time Results", text: "Parents can view exam results and report cards as soon as they are published by the headteacher." },
+                    { label: "Fee Transparency", text: "View current balances, payment history, and download official receipts directly from the portal." },
+                    { label: "Discipline Logs", text: "Stay informed about disciplinary actions or positive behavior commendations." },
+                    { label: "Teacher Communication", text: "Secure channel for parents to receive updates from class teachers regarding their child's progress." }
+                  ]
+                })}
+              />
+              <FeatureItem
+                title="Fee Management"
+                desc="Track payments, generate invoices, and send balance reminders."
+                icon={<FeeIcon />}
+                onClick={() => setSelectedFeature({
+                  title: "Fee Management",
+                  icon: <FeeIcon />,
+                  fullDesc: "Streamlined financial operations for school bursars and administrators.",
+                  details: [
+                    { label: "Automated Invoicing", text: "Generate and send fee structures to all parents at the start of the term with one click." },
+                    { label: "Payment Reconciliation", text: "Integrated tracking of bank deposits, M-Pesa payments, and cash, reducing manual bookkeeping errors." },
+                    { label: "Defaulter Management", text: "Automatically generate lists of students with outstanding balances and send polite reminders to parents." },
+                    { label: "Financial Reporting", text: "Real-time cash flow statements and income summaries for school management boards." }
+                  ]
+                })}
+              />
             </div>
           </div>
         </section>
+
+        {/* ---- Feature Detail Modal ---- */}
+        {selectedFeature && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setSelectedFeature(null)}></div>
+            <div className="relative bg-white text-slate-900 max-w-2xl w-full rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+              <div className="p-8 md:p-12">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl shadow-sm">
+                      {selectedFeature.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-extrabold tracking-tight">{selectedFeature.title}</h3>
+                      <p className="text-blue-600 font-semibold">Powerful Feature Breakdown</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedFeature(null)}
+                    className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed font-medium">
+                  {selectedFeature.fullDesc}
+                </p>
+
+                <div className="space-y-6">
+                  {selectedFeature.details.map((detail: any, idx: number) => (
+                    <div key={idx} className="flex gap-4">
+                      <div className="mt-1.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex-shrink-0 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900">{detail.label}</h4>
+                        <p className="text-slate-500 text-sm leading-relaxed">{detail.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-10 pt-8 border-t border-slate-100">
+                  <button
+                    onClick={() => setSelectedFeature(null)}
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95"
+                  >
+                    Close Breakdown
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ---- Footer ---- */}
         <footer className="py-20 px-6 bg-white border-t border-slate-100">
@@ -285,12 +405,18 @@ function ActionCard({ href, title, desc, icon, color }: any) {
   );
 }
 
-function FeatureItem({ title, desc, icon }: any) {
+function FeatureItem({ title, desc, icon, onClick }: any) {
   return (
-    <div className="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 hover:border-blue-500/50 transition-colors group">
+    <div
+      onClick={onClick}
+      className="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 hover:border-blue-500/50 transition-colors group cursor-pointer"
+    >
       <div className="text-4xl mb-6 transform group-hover:scale-110 transition-transform inline-block">{icon}</div>
       <h3 className="text-xl font-bold mb-3">{title}</h3>
-      <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+      <p className="text-slate-400 text-sm leading-relaxed mb-4">{desc}</p>
+      <div className="text-xs font-bold text-blue-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+        Click for Details →
+      </div>
     </div>
   );
 }
