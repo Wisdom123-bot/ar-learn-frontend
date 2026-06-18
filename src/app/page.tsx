@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import api from "@/lib/api";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [stats, setStats] = useState({ total_schools: 0, total_students: 0, uptime: 99.9 });
+
+  useEffect(() => {
+    api.get("/public/stats")
+      .then(res => setStats(res.data))
+      .catch(err => console.error("Failed to fetch stats", err));
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans">
@@ -79,7 +87,7 @@ export default function HomePage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
-                👋 Welcome to Ar-Learn
+                Welcome to Ar-Learn
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#1E293B] leading-[1.1] tracking-tight">
                 Modern School <br />
@@ -133,9 +141,9 @@ export default function HomePage() {
         <section className="bg-white py-12 border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <StatItem value="10,000+" label="Students Tracked" />
-              <StatItem value="120+" label="Registered Schools" />
-              <StatItem value="99.9%" label="System Uptime" />
+              <StatItem value={stats.total_students.toLocaleString() + "+"} label="Students Tracked" />
+              <StatItem value={stats.total_schools.toLocaleString() + "+"} label="Registered Schools" />
+              <StatItem value={stats.uptime + "%"} label="System Uptime" />
             </div>
           </div>
         </section>
@@ -151,21 +159,21 @@ export default function HomePage() {
               href="/schools/register"
               title="Register School"
               desc="Create a new school account and get started"
-              icon="🏫"
+              icon={<SchoolIcon />}
               color="blue"
             />
             <ActionCard
               href="/login"
               title="Staff Login"
               desc="Access teacher and management dashboards"
-              icon="👨‍🏫"
+              icon={<UserIcon />}
               color="green"
             />
             <ActionCard
               href="/parents/login"
               title="Parent Portal"
               desc="Monitor student performance and fee status"
-              icon="👨‍👩‍👧"
+              icon={<UsersIcon />}
               color="purple"
             />
           </div>
@@ -180,10 +188,10 @@ export default function HomePage() {
               <p className="text-slate-400 max-w-2xl mx-auto text-lg">Everything you need to run a modern school in Kenya.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <FeatureItem title="Attendance Tracking" desc="Monitor attendance in real time with automated alerts for parents." icon="📊" />
-              <FeatureItem title="Smart Analytics" desc="Visual performance dashboards for teachers and headteachers." icon="📈" />
-              <FeatureItem title="Parent Portal" desc="Instant access to results, fees, and disciplinary records." icon="👨‍👩‍👧" />
-              <FeatureItem title="Fee Management" desc="Track payments, generate invoices, and send balance reminders." icon="💳" />
+              <FeatureItem title="Attendance Tracking" desc="Monitor attendance in real time with automated alerts for parents." icon={<AttendanceIcon />} />
+              <FeatureItem title="Smart Analytics" desc="Visual performance dashboards for teachers and headteachers." icon={<AnalyticsIcon />} />
+              <FeatureItem title="Parent Portal" desc="Instant access to results, fees, and disciplinary records." icon={<ParentIcon />} />
+              <FeatureItem title="Fee Management" desc="Track payments, generate invoices, and send balance reminders." icon={<FeeIcon />} />
             </div>
           </div>
         </section>
@@ -203,7 +211,7 @@ export default function HomePage() {
                   The most advanced school management platform built specifically for the Kenyan education system.
                 </p>
                 <div className="flex items-center gap-4 text-slate-400">
-                   <span className="text-2xl font-bold text-slate-900">🇰🇪</span>
+                   <span className="text-sm font-bold text-slate-900 border px-2 py-1 rounded">KE</span>
                    <span className="text-sm font-semibold">Built for Kenyan Schools</span>
                 </div>
               </div>
@@ -299,5 +307,48 @@ function FooterLinkCol({ title, links }: any) {
         ))}
       </ul>
     </div>
+  );
+}
+
+// --- Icons ---
+function SchoolIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  );
+}
+
+function AttendanceIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+  );
+}
+
+function AnalyticsIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  );
+}
+
+function ParentIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  );
+}
+
+function FeeIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
   );
 }
