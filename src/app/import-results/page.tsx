@@ -83,9 +83,21 @@ export default function ImportResultsPage() {
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl mb-4">
+            <h3 className="text-blue-800 font-bold flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+              </svg>
+              AI-Powered Recognition
+            </h3>
+            <p className="text-sm text-blue-700">
+              Our system uses AI to automatically scan your documents. It identifies student names, admission numbers, and maps marks to their respective subjects even from complex PDF layouts or multi-column spreadsheets.
+            </p>
+          </div>
+
           <p className="text-sm text-gray-600">
-            Upload a CSV or Excel file containing previous term results for analysis. 
-            The file should include columns: <span className="font-mono">admission_number</span>, <span className="font-mono">subject</span>, <span className="font-mono">score</span>, <span className="font-mono">exam_type</span>, <span className="font-mono">term</span>, <span className="font-mono">academic_year</span>.
+            Upload a PDF, CSV or Excel file containing results.
+            The AI will extract: <span className="font-mono">admission_number</span>, <span className="font-mono">subject</span>, <span className="font-mono">score</span>, <span className="font-mono">exam_type</span>, <span className="font-mono">term</span>.
           </p>
           
           <button 

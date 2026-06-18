@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-700 font-sans selection:bg-blue-100">
       <nav className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center font-bold text-white text-lg">A</div>
-            <span className="font-bold text-xl text-slate-900 tracking-tight">Ar‑Learn</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <BackButton className="p-2 h-10 w-10" />
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center font-bold text-white text-lg">A</div>
+              <span className="font-bold text-xl text-slate-900 tracking-tight">Ar‑Learn</span>
+            </Link>
+          </div>
           <Link href="/" className="text-sm font-bold text-[#2563EB]">Back to Home</Link>
         </div>
       </nav>

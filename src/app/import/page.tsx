@@ -24,6 +24,7 @@ export default function ImportStudentsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [useAI, setUseAI] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -82,6 +83,7 @@ export default function ImportStudentsPage() {
     formData.append("school_id", selectedSchool);
     formData.append("class_id", selectedClass);
     formData.append("file", file);
+    formData.append("use_ai", String(useAI));
     try {
       const res = await api.post("/import/students", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -149,8 +151,20 @@ export default function ImportStudentsPage() {
             onChange={handleFileChange}
             className="w-full border rounded-lg p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
+          <div className="flex items-center gap-2 mt-3">
+             <input
+               type="checkbox"
+               id="useAi"
+               checked={useAI}
+               onChange={(e) => setUseAI(e.target.checked)}
+               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+             />
+             <label htmlFor="useAi" className="text-sm font-medium text-gray-700">
+               Use AI-Enhanced Parsing (Recommended for complex PDFs)
+             </label>
+          </div>
           <p className="text-xs text-gray-400 mt-1">
-            Names should appear in the first column of Excel/CSV, or as plain text lines in PDF.
+            AI can identify names, admission numbers, and grades automatically even from scanned or complex layouts.
           </p>
         </div>
 

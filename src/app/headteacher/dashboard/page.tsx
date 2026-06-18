@@ -197,6 +197,11 @@ export default function HeadteacherDashboardPage() {
     setShowExportMenu(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("teacher");
+    router.push("/login");
+  };
+
   useEffect(() => {
     if (schoolId) {
       fetchTermFee();
@@ -257,6 +262,12 @@ export default function HeadteacherDashboardPage() {
               </div>
             )}
           </div>
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 text-sm bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition"
+          >
+            Logout
+          </button>
           <BackButton />
         </div>
       </div>
