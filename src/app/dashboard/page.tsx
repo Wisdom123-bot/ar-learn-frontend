@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import NotificationBell from "@/components/NotificationBell";
 import api from "@/lib/api";
 import StudentSearch from "@/components/StudentSearch";
@@ -63,6 +64,13 @@ export default function DashboardPage() {
             <StudentSearch />
           </div>
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="text-sm font-medium text-gray-500 hover:text-blue-600 transition"
+          >
+            Privacy Policy
+          </Link>
           <button
             onClick={handleLogout}
             className="px-3 py-1.5 text-sm border border-gray-500 rounded-lg text-black hover:bg-gray-100"

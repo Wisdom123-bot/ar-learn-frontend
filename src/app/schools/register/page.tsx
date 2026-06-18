@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 
 interface ClassInput {
@@ -27,6 +28,7 @@ export default function SchoolRegistrationPage() {
   const [subjects, setSubjects] = useState<string[]>(["Mathematics", "English", "Kiswahili", "Science", "Social Studies"]);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -107,6 +109,12 @@ export default function SchoolRegistrationPage() {
     const subjectList = subjects.filter((s) => s.trim() !== "");
     if (subjectList.length === 0) {
       setMessage("Please add at least one subject.");
+      setLoading(false);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setMessage("You must accept the Terms of Service and Privacy Policy to register.");
       setLoading(false);
       return;
     }
@@ -445,6 +453,28 @@ export default function SchoolRegistrationPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="flex items-start gap-3 p-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                required
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700 leading-tight">
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" className="text-blue-600 font-semibold hover:underline">
+                  Terms of Service
+                </Link>{" "}
+                and acknowledge the{" "}
+                <Link href="/privacy" target="_blank" className="text-blue-600 font-semibold hover:underline">
+                  Privacy Policy
+                </Link>.
+              </label>
             </div>
 
             {message && (

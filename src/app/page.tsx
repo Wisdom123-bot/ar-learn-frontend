@@ -217,8 +217,8 @@ export default function HomePage() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 lg:gap-24">
-                <FooterLinkCol title="Product" links={[{label: "Features", href: "#"}, {label: "Analytics", href: "#"}, {label: "Pricing", href: "#"}]} />
-                <FooterLinkCol title="Company" links={[{label: "About Us", href: "/about"}, {label: "Contact", href: "/contact"}, {label: "Privacy", href: "#"}]} />
+                <FooterLinkCol title="Product" links={[{label: "Features", href: "/about"}, {label: "Analytics", href: "/about"}, {label: "Pricing", href: "#"}]} />
+                <FooterLinkCol title="Company" links={[{label: "About Us", href: "/about"}, {label: "Contact", href: "/contact"}, {label: "Privacy", href: "/privacy"}, {label: "Terms", href: "/terms"}]} />
                 <FooterLinkCol title="Support" links={[{label: "Help Center", href: "#"}, {label: "Parent FAQ", href: "#"}, {label: "Status", href: "#"}]} />
               </div>
             </div>

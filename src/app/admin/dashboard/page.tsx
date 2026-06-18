@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 
 interface School {
@@ -230,6 +231,13 @@ export default function AdminDashboardPage() {
           <p className="text-gray-400 text-sm">{schools.length} schools registered</p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+          >
+            Privacy
+          </Link>
           <button
             onClick={() => setShowChangePw(!showChangePw)}
             className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"

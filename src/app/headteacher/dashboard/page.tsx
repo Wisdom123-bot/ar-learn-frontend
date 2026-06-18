@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 import dynamic from "next/dynamic";
 import StudentSearch from "@/components/StudentSearch";
@@ -224,6 +225,13 @@ export default function HeadteacherDashboardPage() {
         <div className="flex items-center gap-4">
           <StudentSearch />
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+          >
+            Privacy
+          </Link>
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
