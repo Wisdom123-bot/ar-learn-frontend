@@ -16,7 +16,7 @@ api.interceptors.request.use(
       if (stored) {
         try {
           const user = JSON.parse(stored);
-          const token = user.token || user.teacher_id;
+          const token = user.token; // Now using the signed JWT token
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
