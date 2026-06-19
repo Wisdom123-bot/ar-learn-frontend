@@ -85,8 +85,6 @@ export default function TimetablePage() {
     }
   }, [router]);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     if (viewType === "class" && !selectedClass) return;
     if (viewType === "teacher" && !selectedTeacher) return;
@@ -109,12 +107,12 @@ export default function TimetablePage() {
     e.preventDefault();
     if (!selectedClass || !form.subject_id || !form.teacher_id) return;
     const payload = {
-      school_id: teacher.school_id,
+      school_id: teacher?.school_id,
       entries: [
         {
           class_id: selectedClass,
           subject_id: form.subject_id,
-          teacher_id: form.teacher_id || teacher.teacher_id,
+          teacher_id: form.teacher_id || teacher?.teacher_id,
           day_of_week: form.day_of_week,
           start_time: form.start_time,
           end_time: form.end_time,
@@ -161,6 +159,8 @@ export default function TimetablePage() {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/timetable/pdf/${viewType}/${id}`;
     window.open(url, "_blank");
   };
+
+  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

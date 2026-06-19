@@ -126,8 +126,6 @@ export default function HeadteacherDashboardPage() {
     }
   }, []);
 
-  if (!teacher) return null;
-
   const fetchDashboard = async (sid: string, t: string, pt: string) => {
     setLoading(true);
     setMessage("");
@@ -226,7 +224,7 @@ export default function HeadteacherDashboardPage() {
         student_id: feeStudent.student_id,
         amount: parseFloat(paymentAmount),
         term,
-        recorded_by: teacher.teacher_id,
+        recorded_by: teacher?.teacher_id,
       });
       setFeeMessage(`Payment recorded. Receipt: ${res.data.receipt_number}`);
       setPaymentAmount("");
@@ -261,6 +259,8 @@ export default function HeadteacherDashboardPage() {
       fetchDeficit();
     }
   }, [schoolId, term]);
+
+  if (!teacher) return null;
 
 
   return (

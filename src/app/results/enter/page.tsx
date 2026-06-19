@@ -44,8 +44,6 @@ export default function EnterResultsPage() {
     }
   }, [router]);
 
-  if (!teacher) return null;
-
   // TanStack Query for Assignments
   const { data: assignments = [] } = useQuery({
     queryKey: ["assignments", teacher?.teacher_id],
@@ -128,6 +126,8 @@ export default function EnterResultsPage() {
       setCurrentPage(Math.max(0, totalPages - 1));
     }
   }, [filteredStudents.length, totalPages, currentPage]);
+
+  if (!teacher) return null;
 
   const handleScoreChange = (studentId: string, value: string) => {
     const numValue = parseFloat(value);

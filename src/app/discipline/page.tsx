@@ -68,8 +68,6 @@ export default function DisciplinePage() {
     }).catch(() => {});
   }, [router]);
 
-  if (!teacher) return null;
-
   // Load students when class changes
   useEffect(() => {
     if (!teacher || !selectedClassId) return;
@@ -106,7 +104,7 @@ export default function DisciplinePage() {
       await api.post("/discipline/record", {
         student_id: form.student_id,
         class_id: selectedClassId,
-        teacher_id: teacher.teacher_id,
+        teacher_id: teacher?.teacher_id,
         incident_date: form.incident_date,
         category: form.category,
         description: form.description,
@@ -134,6 +132,8 @@ export default function DisciplinePage() {
     if (cat === "Major") return "bg-red-100 text-red-800";
     return "bg-yellow-100 text-yellow-800";
   };
+
+  if (!teacher) return null;
 
 
   return (

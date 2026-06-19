@@ -52,8 +52,6 @@ export default function AttendancePage() {
     }).catch(console.error);
   }, [router]);
 
-  if (!teacher) return null;
-
   // Fetch students of the selected class directly – no more filtering all students
   useEffect(() => {
     if (!selectedClassId) return;
@@ -84,7 +82,7 @@ export default function AttendancePage() {
     setMessage("");
     const payload = {
       class_id: selectedClassId,
-      recorded_by: teacher.teacher_id,
+      recorded_by: teacher?.teacher_id,
       records: attendance.map((a) => ({
         student_id: a.student_id,
         date,
@@ -134,6 +132,8 @@ export default function AttendancePage() {
       setCurrentPage(Math.max(0, totalPages - 1));
     }
   }, [totalPages, currentPage]);
+
+  if (!teacher) return null;
 
 
   return (

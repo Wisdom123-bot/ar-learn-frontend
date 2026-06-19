@@ -109,6 +109,7 @@ export default function DeanDashboardPage() {
 
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showTimetableModal, setShowTimetableModal] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
@@ -125,8 +126,6 @@ export default function DeanDashboardPage() {
     fetchDashboard(t.school_id, term);
   }, []);
 
-  if (!teacher) return null;
-  const [showTimetableModal, setShowTimetableModal] = useState(false);
   const fetchDashboard = async (schoolId: string, t: string) => {
     setLoading(true);
     setMessage("");
@@ -151,15 +150,17 @@ export default function DeanDashboardPage() {
     const base = `${process.env.NEXT_PUBLIC_API_URL}/exports`;
     let url = "";
     if (type === "students") {
-      url = `${base}/students/${teacher.school_id}?format=${format}`;
+      url = `${base}/students/${teacher?.school_id}?format=${format}`;
     } else if (type === "results") {
-      url = `${base}/results/${teacher.school_id}?term=${encodeURIComponent(term)}&format=${format}`;
+      url = `${base}/results/${teacher?.school_id}?term=${encodeURIComponent(term)}&format=${format}`;
     } else if (type === "fees") {
-      url = `${base}/fees/${teacher.school_id}?term=${encodeURIComponent(term)}&format=${format}`;
+      url = `${base}/fees/${teacher?.school_id}?term=${encodeURIComponent(term)}&format=${format}`;
     }
     if (url) window.open(url, "_blank");
     setShowExportMenu(false);
   };
+
+  if (!teacher) return null;
 
 
   return (

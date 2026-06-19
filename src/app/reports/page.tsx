@@ -50,8 +50,6 @@ export default function ReportsPage() {
     }
   }, [router]);
 
-  if (!teacher) return null;
-
   // Fetch class size when selectedClass changes
   useEffect(() => {
     if (!selectedClass) return;
@@ -107,6 +105,8 @@ export default function ReportsPage() {
       setPrintingAll(false);
     }
   };
+
+  if (!teacher) return null;
 
 
   return (
