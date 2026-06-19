@@ -61,6 +61,7 @@ export default function UnifiedLoginPage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
+        console.log("Auto-login session data:", parsed);
         const user = TeacherSchema.parse(parsed);
         if (user.role === "headteacher") {
           router.push("/headteacher/dashboard");
@@ -124,12 +125,14 @@ export default function UnifiedLoginPage() {
         teacher_code: teacherCode.trim().toUpperCase(),
       });
 
+      console.log("Login raw response:", res.data);
+
       // Validate response with Zod
+      console.log("Validating response data:", res.data);
       const user = TeacherSchema.parse({
         ...res.data,
-        role: selectedRole,
-        school_name: selectedSchool.name,
       });
+      console.log("Validation success:", user);
 
       localStorage.setItem("teacher", JSON.stringify(user));
       setFailedAttempts(0); // Reset on success
@@ -141,6 +144,7 @@ export default function UnifiedLoginPage() {
         router.push("/dashboard");
       }
     } catch (err: unknown) {
+      console.error("Login full error:", err);
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
 
