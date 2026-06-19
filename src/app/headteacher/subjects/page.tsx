@@ -20,6 +20,8 @@ export default function ManageSubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -92,7 +94,6 @@ export default function ManageSubjectsPage() {
     }
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

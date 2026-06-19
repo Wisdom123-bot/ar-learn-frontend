@@ -90,6 +90,8 @@ export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -110,7 +112,6 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
-  if (!teacher) return null;
 
   const onboardingSteps = [
     { target: "#quick-actions", title: "Quick Actions", content: "Access all your essential tools like Results Entry and Attendance here.", position: "bottom" as const },

@@ -20,6 +20,8 @@ export default function StudentListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -45,7 +47,6 @@ export default function StudentListPage() {
       s.class_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

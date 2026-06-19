@@ -38,6 +38,8 @@ export default function TeacherProfilePage() {
   const [phone, setPhone] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -75,7 +77,6 @@ export default function TeacherProfilePage() {
     }
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

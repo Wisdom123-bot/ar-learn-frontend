@@ -108,6 +108,8 @@ export default function HeadteacherDashboardPage() {
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -260,7 +262,6 @@ export default function HeadteacherDashboardPage() {
     }
   }, [schoolId, term]);
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

@@ -31,6 +31,31 @@ export default function LeaderboardPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [scope, setScope] = useState<"national" | "county">("national");
 
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    const list = scope === "national" ? data.national_top_5 : data.county_top_5;
+
+    // Ensure current school is in the list for comparison if it's not top 5
+    const results = list.map(s => ({
+       name: s.school_name,
+       mean: s.school_mean,
+       isMe: s.school_id === teacher?.school_id
+    }));
+
+    const isMeInTop5 = results.some(r => r.isMe);
+    if (!isMeInTop5 && data && teacher) {
+       results.push({
+          name: data.school_name + " (You)",
+          mean: data.school_mean,
+          isMe: true
+       });
+    }
+
+    return results.sort((a,b) => b.mean - a.mean);
+  }, [data, scope, teacher]);
+
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -70,30 +95,6 @@ export default function LeaderboardPage() {
     fetchLeaderboard(teacher.school_id, term);
   };
 
-  const chartData = useMemo(() => {
-    if (!data) return [];
-    const list = scope === "national" ? data.national_top_5 : data.county_top_5;
-
-    // Ensure current school is in the list for comparison if it's not top 5
-    const results = list.map(s => ({
-       name: s.school_name,
-       mean: s.school_mean,
-       isMe: s.school_id === teacher.school_id
-    }));
-
-    const isMeInTop5 = results.some(r => r.isMe);
-    if (!isMeInTop5) {
-       results.push({
-          name: data.school_name + " (You)",
-          mean: data.school_mean,
-          isMe: true
-       });
-    }
-
-    return results.sort((a,b) => b.mean - a.mean);
-  }, [data, scope, teacher]);
-
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-12 text-black">

@@ -110,6 +110,8 @@ export default function DeanDashboardPage() {
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -159,7 +161,6 @@ export default function DeanDashboardPage() {
     setShowExportMenu(false);
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

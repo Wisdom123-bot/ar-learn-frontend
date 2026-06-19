@@ -33,6 +33,8 @@ export default function FeesPage() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -109,7 +111,6 @@ export default function FeesPage() {
     }
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 text-black">

@@ -27,6 +27,8 @@ export default function ReportsPage() {
   const [printingAll, setPrintingAll] = useState(false);
   const [classSize, setClassSize] = useState<number>(0);
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -106,7 +108,6 @@ export default function ReportsPage() {
     }
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

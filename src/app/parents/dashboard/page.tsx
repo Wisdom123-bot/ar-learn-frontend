@@ -19,6 +19,8 @@ export default function ParentDashboardPage() {
   const [parent, setParent] = useState<ParentData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
 
+  if (!parent) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("parent");
     if (!stored) {
@@ -33,7 +35,6 @@ export default function ParentDashboardPage() {
     router.push("/parents/login");
   };
 
-  if (!parent) return null;
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 md:p-10">

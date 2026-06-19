@@ -55,6 +55,8 @@ export default function TimetablePage() {
     end_time: "08:40",
   });
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -153,7 +155,6 @@ export default function TimetablePage() {
     entries.sort((a, b) => a.start_time.localeCompare(b.start_time))
   );
 
-  if (!teacher) return null;
 
   const handleDownloadPDF = () => {
     const id = viewType === "class" ? selectedClass : selectedTeacher;

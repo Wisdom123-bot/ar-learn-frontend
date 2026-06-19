@@ -57,6 +57,8 @@ export default function ClassTeacherDashboard() {
   const [savingAtt, setSavingAtt] = useState(false);
   const [attMessage, setAttMessage] = useState("");
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -134,7 +136,6 @@ export default function ClassTeacherDashboard() {
     }
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] text-gray-800">

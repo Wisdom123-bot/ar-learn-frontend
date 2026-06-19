@@ -39,6 +39,8 @@ function RiskContent() {
   const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
   const [term, setTerm] = useState(searchParams.get("term") || "Term 1 2025");
 
+  if (!teacher) return null;
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -84,7 +86,6 @@ function RiskContent() {
     if (selectedClass) fetchRisk(selectedClass, term);
   };
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
