@@ -22,6 +22,7 @@ interface ClassItem {
 interface TimetableEntry {
   id: string;
   class_id: string;
+  class_name: string;
   subject_name: string;
   teacher_name: string;
   day_of_week: string;
