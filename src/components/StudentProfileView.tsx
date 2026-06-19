@@ -333,6 +333,28 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
+            <div className="h-80 w-full">
+              {radarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                    <PolarGrid stroke="#f1f5f9" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
+                    <Radar
+                      name="Score"
+                      dataKey="score"
+                      stroke="#4f46e5"
+                      fill="#4f46e5"
+                      fillOpacity={0.6}
+                    />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm">No results to display.</div>
+              )}
+            </div>
+          </div>
 
           {/* Achievement Badges Section */}
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
