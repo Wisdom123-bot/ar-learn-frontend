@@ -610,24 +610,68 @@ export default function HeadteacherDashboardPage() {
             </div>
           )}
           {data.risk_sample.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-3">
-              <h3 className="font-semibold text-gray-800 mb-2">At‑Risk Students</h3>
-              <ul className="space-y-1 text-sm">
-                {data.risk_sample.map((s: any, i: number) => (
-                  <li key={i} className="flex justify-between items-center py-1">
-                    <button
-                      onClick={() => {
-                        router.push(`/students/${s.student_id}`);
-                      }}
-                      className="text-blue-600 hover:underline text-left"
-                    >
-                      {s.student_name}
-                    </button>
-                    <span className="text-red-600 font-medium">{s.mean_score}%</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-[10px] text-gray-400 mt-2 italic">* Click a name to manage their fees/admissions</p>
+            <div className="bg-white rounded-[2rem] shadow-sm p-8 border border-gray-100">
+              <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                 <span className="p-2 bg-red-50 text-red-600 rounded-xl">🚨</span>
+                 At‑Risk Students
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(
+                  data.risk_sample.reduce((acc, s) => {
+                    // We don't have class_name in risk_sample, but let's assume we can fetch it or just use "At Risk"
+                    const group = "Academic Support Needed";
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(s);
+                    return acc;
+                  }, {} as Record<string, any[]>)
+                ).map(([group, groupStudents]) => {
+                  const [isExpanded, setIsExpanded] = useState(false);
+                  return (
+                    <div key={group} className="flex flex-col gap-3">
+                       <div
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="bg-gray-900 p-6 rounded-[2rem] shadow-xl text-white hover:bg-gray-800 transition-all cursor-pointer group"
+                       >
+                          <div className="flex items-center justify-between mb-4">
+                             <div>
+                                <h4 className="text-lg font-black">{group}</h4>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Urgent Intervention</p>
+                             </div>
+                             <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-red-400">
+                               {groupStudents.length} Students Flagged
+                            </span>
+                            <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors">
+                               {isExpanded ? "Hide" : "Review List"}
+                            </span>
+                          </div>
+                       </div>
+
+                       {isExpanded && (
+                          <div className="space-y-2">
+                             {groupStudents.map((s, i) => (
+                                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
+                                   <div>
+                                      <p className="text-sm font-bold text-gray-900">{s.student_name}</p>
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase">Mean: {s.mean_score}%</p>
+                                   </div>
+                                   <button
+                                      onClick={() => router.push(`/students/${s.student_id}`)}
+                                      className="text-xs font-black text-blue-600 uppercase"
+                                   >
+                                      Profile →
+                                   </button>
+                                </div>
+                             ))}
+                          </div>
+                       )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

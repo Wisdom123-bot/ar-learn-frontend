@@ -127,6 +127,7 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Student Groups by Class */}
       {loading ? (
         <div className="text-center text-black py-10">Loading…</div>
       ) : students.length === 0 ? (
@@ -134,31 +135,76 @@ export default function DashboardPage() {
           No students assigned yet.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {students.map((s) => (
-            <div
-              key={s.id}
-              onClick={() => router.push(`/students/${s.id}`)}
-              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                  {s.name.charAt(0)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(
+            students.reduce((acc, s) => {
+              const className = s.class_name || "Unassigned";
+              if (!acc[className]) acc[className] = [];
+              acc[className].push(s);
+              return acc;
+            }, {} as Record<string, Student[]>)
+          ).map(([className, classStudents]) => {
+            const [isExpanded, setIsExpanded] = useState(false);
+
+            return (
+              <div key={className} className="flex flex-col gap-3">
+                <div
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <svg width="60" height="60" viewBox="0 0 20 20" fill="currentColor">
+                       <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.07 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl font-black">
+                      {className.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-gray-900 leading-tight">Your Students</h3>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{className}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                      {classStudents.length} Students
+                    </span>
+                    <span className="text-xs font-black text-gray-400 uppercase group-hover:text-blue-600 transition-colors">
+                      {isExpanded ? "Collapse" : "View List"} {isExpanded ? "↑" : "↓"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-black group-hover:text-blue-600 transition-colors">{s.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {s.admission_number} • <span className="text-blue-500 font-medium">{s.class_name}</span>
-                  </p>
-                </div>
-                <div className="text-gray-300 group-hover:text-blue-500 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
+
+                {isExpanded && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {classStudents.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => router.push(`/students/${s.id}`)}
+                        className="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 hover:border-blue-200 transition-all cursor-pointer flex items-center gap-3"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold">
+                          {s.name.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-gray-900">{s.name}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">{s.admission_number}</p>
+                        </div>
+                        <div className="text-gray-300">
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

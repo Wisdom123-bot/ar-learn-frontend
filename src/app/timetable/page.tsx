@@ -38,6 +38,8 @@ export default function TimetablePage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [viewType, setViewType] = useState<"class" | "teacher">("class");
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -69,22 +71,36 @@ export default function TimetablePage() {
           setSelectedClass(classes[0].id);
         }
       }).catch(() => {});
+      // Fetch school's teachers
+      api.get(`/schools/${t.school_id}/teachers`).then((res) => {
+        const teachers = res.data || [];
+        setTeachers(teachers);
+        if (!selectedTeacher) {
+          setSelectedTeacher(t.teacher_id);
+        }
+      }).catch(() => {});
       // Fetch subjects
       api.get("/subjects", { params: { school_id: t.school_id } }).then((res) => setSubjects(res.data || [])).catch(() => {});
     }
-  }, [router, selectedClass]);
+  }, [router]);
 
   useEffect(() => {
-    if (!selectedClass) return;
+    if (viewType === "class" && !selectedClass) return;
+    if (viewType === "teacher" && !selectedTeacher) return;
+
     setLoading(true);
-    api.get(`/timetable/class/${selectedClass}`)
+    const endpoint = viewType === "class"
+      ? `/timetable/class/${selectedClass}`
+      : `/timetable/teacher/${selectedTeacher}`;
+
+    api.get(endpoint)
       .then((res) => setTimetable(res.data))
       .catch((err) => {
         console.error("Timetable fetch failed:", err);
         setTimetable([]);
       })
       .finally(() => setLoading(false));
-  }, [selectedClass]);
+  }, [selectedClass, selectedTeacher, viewType]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,8 +123,10 @@ export default function TimetablePage() {
       setMessage(res.data.message || "Entry added");
       setShowForm(false);
       // Refresh timetable
-      if (selectedClass) {
+      if (viewType === "class" && selectedClass) {
         api.get(`/timetable/class/${selectedClass}`).then((r) => setTimetable(r.data));
+      } else if (viewType === "teacher" && selectedTeacher) {
+        api.get(`/timetable/teacher/${selectedTeacher}`).then((r) => setTimetable(r.data));
       }
     } catch (err: unknown) {
       const detail = (err as any).response?.data?.detail;
@@ -136,29 +154,78 @@ export default function TimetablePage() {
 
   if (!teacher) return null;
 
+  const handleDownloadPDF = () => {
+    const id = viewType === "class" ? selectedClass : selectedTeacher;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/timetable/pdf/${viewType}/${id}`;
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => router.back()} className="text-gray-500">
-          ← Back
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.back()} className="text-gray-500">
+            ← Back
+          </button>
+          <h1 className="text-xl font-bold text-gray-800">School Timetable</h1>
+        </div>
+        <button
+          onClick={handleDownloadPDF}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition"
+        >
+          📄 Download PDF
         </button>
-        <h1 className="text-xl font-bold text-gray-800">Class Timetable</h1>
       </div>
 
-      {/* Class selector */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Select Class</label>
-        <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="w-full border rounded-lg p-2 text-sm"
-        >
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+      {/* View switcher */}
+      <div className="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+         <button
+            onClick={() => setViewType("class")}
+            className={`flex-1 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition ${viewType === "class" ? "bg-gray-900 text-white shadow-md" : "text-gray-400 hover:bg-gray-50"}`}
+         >
+            Class View
+         </button>
+         <button
+            onClick={() => setViewType("teacher")}
+            className={`flex-1 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition ${viewType === "teacher" ? "bg-gray-900 text-white shadow-md" : "text-gray-400 hover:bg-gray-50"}`}
+         >
+            Teacher View
+         </button>
+      </div>
+
+      {/* Selectors */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {viewType === "class" ? (
+          <div>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Select Class</label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm font-bold text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Select Teacher</label>
+            <select
+              value={selectedTeacher}
+              onChange={(e) => setSelectedTeacher(e.target.value)}
+              className="w-full bg-white border border-gray-100 rounded-xl p-3 text-sm font-bold text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Weekly view */}
@@ -176,18 +243,17 @@ export default function TimetablePage() {
                   {grouped[day].map((entry) => (
                     <li
                       key={entry.id}
-                      className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded-lg"
+                      className="flex justify-between items-center text-sm bg-gray-50 p-3 rounded-2xl border border-gray-100"
                     >
                       <div>
-                        <span className="font-medium">{entry.subject_name}</span>
-                        <span className="text-gray-500 ml-2">
-                          ({entry.start_time.slice(0,5)}–{entry.end_time.slice(0,5)})
-                        </span>
-                        <p className="text-xs text-gray-400">{entry.teacher_name}</p>
+                        <p className="font-black text-gray-900">{entry.subject_name}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                           {entry.start_time.slice(0,5)} – {entry.end_time.slice(0,5)} • {viewType === "class" ? entry.teacher_name : entry.class_name}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleDelete(entry.id)}
-                        className="text-red-400 text-xs hover:text-red-600"
+                        className="h-8 w-8 flex items-center justify-center bg-white border border-gray-100 text-red-400 rounded-xl hover:text-red-600 shadow-sm transition"
                       >
                         ✕
                       </button>
