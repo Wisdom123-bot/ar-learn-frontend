@@ -25,7 +25,7 @@ export default function NotificationBell({
 
   const fetchNotifications = async () => {
     try {
-      const res = await api.get("/notifications/", {
+      const res = await api.get("/notifications", {
         params: { school_id: schoolId, teacher_id: teacherId || undefined, limit: 10 },
       });
       setNotifications(res.data || []);

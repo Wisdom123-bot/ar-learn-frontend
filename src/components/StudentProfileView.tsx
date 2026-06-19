@@ -302,7 +302,7 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
             <div className="h-96 w-full">
               {comparisonData.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={0}>
                   <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
@@ -339,7 +339,7 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
             <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
             <div className="h-80 w-full">
               {radarData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={0}>
                   <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                     <PolarGrid stroke="#f1f5f9" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />

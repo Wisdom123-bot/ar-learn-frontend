@@ -71,7 +71,7 @@ export default function PremiumCharts({ schoolId, term }: { schoolId: string; te
              <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">📊</div>
           </div>
           <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={0}>
               <BarChart data={classData} layout="vertical" margin={{ left: 10 }} aria-label="Horizontal Bar Chart showing mean scores by class">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis type="number" domain={[0, 100]} hide />
@@ -152,7 +152,7 @@ export default function PremiumCharts({ schoolId, term }: { schoolId: string; te
               <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🎯</div>
            </div>
            <div className="h-96 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={0}>
                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={subjectData} aria-label="Subject Mastery Radar Chart">
                     <PolarGrid stroke="#f1f5f9" />
                     <PolarAngleAxis dataKey="subject_name" tick={{ fontSize: 12, fontWeight: 800, fill: '#64748b' }} />
