@@ -431,13 +431,14 @@ export default function HeadteacherDashboardPage() {
       ) : data ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white p-3 rounded-xl shadow-sm">
+            <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
               <p className="text-xs text-gray-500">School Mean</p>
               <p className="text-2xl font-bold text-blue-600">{data.school_mean}</p>
             </div>
-            <div className="bg-white p-3 rounded-xl shadow-sm">
-              <p className="text-xs text-gray-500">At‑Risk Students</p>
-              <p className="text-2xl font-bold text-red-600">{data.risk_student_count}</p>
+            <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 group relative">
+              <p className="text-xs text-gray-500">Intelligence Suite</p>
+              <p className="text-sm font-black text-emerald-600 uppercase tracking-widest mt-1 animate-pulse">Active Model</p>
+              <div className="absolute top-2 right-2 h-2 w-2 bg-emerald-500 rounded-full"></div>
             </div>
           </div>
           {teacher.is_premium && <PremiumCharts schoolId={teacher.school_id} term={term} />}
