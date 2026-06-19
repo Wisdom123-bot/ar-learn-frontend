@@ -27,6 +27,56 @@ interface DashboardData {
   cbc_weakest_competencies: { competency: string; BE: number; AE: number }[];
 }
 
+function RiskCard({ group, groupStudents, router }: { group: string; groupStudents: any[]; router: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+    <div className="flex flex-col gap-3">
+       <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="bg-gray-900 p-6 rounded-[2rem] shadow-xl text-white hover:bg-gray-800 transition-all cursor-pointer group"
+       >
+          <div className="flex items-center justify-between mb-4">
+             <div>
+                <h4 className="text-lg font-black">{group}</h4>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">School-wide Scan</p>
+             </div>
+             <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-red-400">
+               {groupStudents.length} Students At Risk
+            </span>
+            <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors flex items-center gap-1">
+               {isExpanded ? "Hide" : "Expand"}
+               <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+               </svg>
+            </span>
+          </div>
+       </div>
+
+       {isExpanded && (
+          <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+             {groupStudents.map((s, i) => (
+                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-blue-200 transition-all">
+                   <div>
+                      <p className="text-sm font-bold text-gray-900">{s.student_name}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Mean Score: {s.mean_score}%</p>
+                   </div>
+                   <button
+                      onClick={() => router.push(`/students/${s.student_id}`)}
+                      className="text-[10px] font-black text-blue-600 uppercase tracking-tighter"
+                   >
+                      View Intelligence →
+                   </button>
+                </div>
+             ))}
+          </div>
+       )}
+    </div>
+  );
+}
+
 export default function HeadteacherDashboardPage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -632,55 +682,9 @@ export default function HeadteacherDashboardPage() {
                     acc[group].push(s);
                     return acc;
                   }, {} as Record<string, any[]>)
-                ).map(([group, groupStudents]) => {
-                  const [isExpanded, setIsExpanded] = useState(false);
-                  return (
-                    <div key={group} className="flex flex-col gap-3">
-                       <div
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="bg-gray-900 p-6 rounded-[2rem] shadow-xl text-white hover:bg-gray-800 transition-all cursor-pointer group"
-                       >
-                          <div className="flex items-center justify-between mb-4">
-                             <div>
-                                <h4 className="text-lg font-black">{group}</h4>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">School-wide Scan</p>
-                             </div>
-                             <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-red-400">
-                               {groupStudents.length} Students At Risk
-                            </span>
-                            <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors flex items-center gap-1">
-                               {isExpanded ? "Hide" : "Expand"}
-                               <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                               </svg>
-                            </span>
-                          </div>
-                       </div>
-
-                       {isExpanded && (
-                          <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                             {groupStudents.map((s, i) => (
-                                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-blue-200 transition-all">
-                                   <div>
-                                      <p className="text-sm font-bold text-gray-900">{s.student_name}</p>
-                                      <p className="text-[10px] font-bold text-gray-400 uppercase">Mean Score: {s.mean_score}%</p>
-                                   </div>
-                                   <button
-                                      onClick={() => router.push(`/students/${s.student_id}`)}
-                                      className="text-[10px] font-black text-blue-600 uppercase tracking-tighter"
-                                   >
-                                      View Intelligence →
-                                   </button>
-                                </div>
-                             ))}
-                          </div>
-                       )}
-                    </div>
-                  );
-                })}
+                ).map(([group, groupStudents]) => (
+                  <RiskCard key={group} group={group} groupStudents={groupStudents} router={router} />
+                ))}
               </div>
             </div>
           )}

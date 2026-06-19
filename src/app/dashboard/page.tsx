@@ -16,6 +16,74 @@ interface Student {
   class_name: string;
 }
 
+function ClassCard({ classId, classInfo, router }: { classId: string; classInfo: { name: string; students: Student[] }; router: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+          <svg width="60" height="60" viewBox="0 0 20 20" fill="currentColor">
+             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.07 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+          </svg>
+        </div>
+
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl font-black">
+            {classInfo.name.charAt(0)}
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-gray-900 leading-tight">Students of {classInfo.name}</h3>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Enrollment</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+            {classInfo.students.length} Students
+          </span>
+          <span className="text-[10px] font-black text-gray-400 uppercase group-hover:text-blue-600 transition-colors flex items-center gap-1">
+            {isExpanded ? "Collapse" : "View List"}
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          {classInfo.students.map((s) => (
+            <div
+              key={s.id}
+              onClick={() => router.push(`/students/${s.id}`)}
+              className="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 hover:border-blue-200 transition-all cursor-pointer flex items-center justify-between group/item"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors">
+                  {s.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{s.name}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">{s.admission_number}</p>
+                </div>
+              </div>
+              <div className="text-gray-300 group-hover/item:text-blue-500 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -143,73 +211,9 @@ export default function DashboardPage() {
               acc[classId].students.push(s);
               return acc;
             }, {} as Record<string, { name: string; students: Student[] }>)
-          ).map(([classId, classInfo]) => {
-            const [isExpanded, setIsExpanded] = useState(false);
-
-            return (
-              <div key={classId} className="flex flex-col gap-3">
-                <div
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <svg width="60" height="60" viewBox="0 0 20 20" fill="currentColor">
-                       <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.07 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                    </svg>
-                  </div>
-
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl font-black">
-                      {classInfo.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-gray-900 leading-tight">Students of {classInfo.name}</h3>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Enrollment</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                      {classInfo.students.length} Students
-                    </span>
-                    <span className="text-[10px] font-black text-gray-400 uppercase group-hover:text-blue-600 transition-colors flex items-center gap-1">
-                      {isExpanded ? "Collapse" : "View List"}
-                      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {classInfo.students.map((s) => (
-                      <div
-                        key={s.id}
-                        onClick={() => router.push(`/students/${s.id}`)}
-                        className="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 hover:border-blue-200 transition-all cursor-pointer flex items-center justify-between group/item"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors">
-                            {s.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">{s.name}</p>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase">{s.admission_number}</p>
-                          </div>
-                        </div>
-                        <div className="text-gray-300 group-hover/item:text-blue-500 transition-colors">
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          ).map(([classId, classInfo]) => (
+            <ClassCard key={classId} classId={classId} classInfo={classInfo} router={router} />
+          ))}
         </div>
       )}
     </div>

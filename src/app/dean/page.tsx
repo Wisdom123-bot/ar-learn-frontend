@@ -53,6 +53,49 @@ interface DeanDashboardData {
   risk_by_class: Record<string, number>;
 }
 
+function ClassRiskCard({ className, count, router }: { className: string; count: number; router: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  return (
+     <div className="flex flex-col gap-3">
+        <div
+           onClick={() => setIsExpanded(!isExpanded)}
+           className="bg-gray-900 p-6 rounded-[2rem] shadow-xl text-white hover:bg-gray-800 transition-all cursor-pointer group"
+        >
+           <div className="flex items-center justify-between mb-4">
+              <div>
+                 <h4 className="text-lg font-black">{className}</h4>
+                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Urgent Scan</p>
+              </div>
+              <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
+           </div>
+           <div className="flex items-center justify-between">
+             <span className="text-xs font-bold text-red-400">
+                {count} Students At Risk
+             </span>
+             <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors flex items-center gap-1">
+                {isExpanded ? "Hide" : "Details"}
+                <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+             </span>
+           </div>
+        </div>
+
+        {isExpanded && (
+           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
+              <p className="text-xs text-gray-500 font-medium">Use the "Student List" module to view individual profiles for {className}.</p>
+              <button
+                 onClick={() => router.push("/students")}
+                 className="mt-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+              >
+                 Open Registry →
+              </button>
+           </div>
+        )}
+     </div>
+  );
+}
+
 export default function DeanDashboardPage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -409,48 +452,9 @@ export default function DeanDashboardPage() {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 {Object.entries(data.risk_by_class).map(([className, count]) => {
-                    const [isExpanded, setIsExpanded] = useState(false);
-                    return (
-                       <div key={className} className="flex flex-col gap-3">
-                          <div
-                             onClick={() => setIsExpanded(!isExpanded)}
-                             className="bg-gray-900 p-6 rounded-[2rem] shadow-xl text-white hover:bg-gray-800 transition-all cursor-pointer group"
-                          >
-                             <div className="flex items-center justify-between mb-4">
-                                <div>
-                                   <h4 className="text-lg font-black">{className}</h4>
-                                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Urgent Scan</p>
-                                </div>
-                                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
-                             </div>
-                             <div className="flex items-center justify-between">
-                               <span className="text-xs font-bold text-red-400">
-                                  {count} Students At Risk
-                               </span>
-                               <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors flex items-center gap-1">
-                                  {isExpanded ? "Hide" : "Details"}
-                                  <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                  </svg>
-                               </span>
-                             </div>
-                          </div>
-
-                          {isExpanded && (
-                             <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
-                                <p className="text-xs text-gray-500 font-medium">Use the "Student List" module to view individual profiles for {className}.</p>
-                                <button
-                                   onClick={() => router.push("/students")}
-                                   className="mt-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
-                                >
-                                   Open Registry →
-                                </button>
-                             </div>
-                          )}
-                       </div>
-                    );
-                 })}
+                 {Object.entries(data.risk_by_class).map(([className, count]) => (
+                    <ClassRiskCard key={className} className={className} count={count} router={router} />
+                 ))}
               </div>
             </div>
           </div>
