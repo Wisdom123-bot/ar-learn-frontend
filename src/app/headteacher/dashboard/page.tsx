@@ -614,14 +614,14 @@ export default function HeadteacherDashboardPage() {
             <div className="bg-white rounded-[2rem] shadow-sm p-8 border border-gray-100">
               <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
                  <span className="p-2 bg-red-50 text-red-600 rounded-xl">🚨</span>
-                 At‑Risk Students
+                 Academic Risk by Class
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Object.entries(
                   data.risk_sample.reduce((acc, s) => {
-                    // We don't have class_name in risk_sample, but let's assume we can fetch it or just use "At Risk"
-                    const group = "Academic Support Needed";
+                    // Group all risk students into a card for HT
+                    const group = "Academic Intervention";
                     if (!acc[group]) acc[group] = [];
                     acc[group].push(s);
                     return acc;
@@ -637,33 +637,36 @@ export default function HeadteacherDashboardPage() {
                           <div className="flex items-center justify-between mb-4">
                              <div>
                                 <h4 className="text-lg font-black">{group}</h4>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Urgent Intervention</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">School-wide Scan</p>
                              </div>
                              <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">⚠️</div>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-red-400">
-                               {groupStudents.length} Students Flagged
+                               {groupStudents.length} Students At Risk
                             </span>
-                            <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors">
-                               {isExpanded ? "Hide" : "Review List"}
+                            <span className="text-[10px] font-black uppercase text-gray-500 group-hover:text-white transition-colors flex items-center gap-1">
+                               {isExpanded ? "Hide" : "Expand"}
+                               <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                               </svg>
                             </span>
                           </div>
                        </div>
 
                        {isExpanded && (
-                          <div className="space-y-2">
+                          <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                              {groupStudents.map((s, i) => (
-                                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
+                                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-blue-200 transition-all">
                                    <div>
                                       <p className="text-sm font-bold text-gray-900">{s.student_name}</p>
-                                      <p className="text-[10px] font-bold text-gray-400 uppercase">Mean: {s.mean_score}%</p>
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase">Mean Score: {s.mean_score}%</p>
                                    </div>
                                    <button
                                       onClick={() => router.push(`/students/${s.student_id}`)}
-                                      className="text-xs font-black text-blue-600 uppercase"
+                                      className="text-[10px] font-black text-blue-600 uppercase tracking-tighter"
                                    >
-                                      Profile →
+                                      View Intelligence →
                                    </button>
                                 </div>
                              ))}

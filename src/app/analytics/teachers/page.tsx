@@ -171,18 +171,18 @@ export default function TeacherAnalyticsPage() {
 
                   <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col justify-between">
                      <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Value‑Add Index</p>
-                        <p className={`text-4xl font-black ${data[0]?.value_add !== null && (data[0]?.value_add ?? 0) >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                           {data[0]?.value_add !== null && (data[0]?.value_add ?? 0) > 0 ? "+" : ""}{data[0]?.value_add}%
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Value‑Add (V.A)</p>
+                        <p className={`text-4xl font-black ${data[0]?.value_add >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                           {data[0]?.value_add > 0 ? "+" : ""}{data[0]?.value_add}%
                         </p>
                      </div>
                      <div className="h-2 w-full bg-gray-50 rounded-full mt-6 overflow-hidden">
                         <div
-                           className={`h-full transition-all duration-1000 ${data[0]?.value_add !== null && (data[0]?.value_add ?? 0) >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
-                           style={{ width: `${Math.abs((data[0]?.value_add ?? 0) * 10)}%` }}
+                           className={`h-full transition-all duration-1000 ${data[0]?.value_add >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
+                           style={{ width: `${Math.min(Math.abs((data[0]?.value_add ?? 0) * 10), 100)}%` }}
                         ></div>
                      </div>
-                     <p className="text-[9px] font-bold text-gray-400 mt-2 uppercase">Relative to school subject mean</p>
+                     <p className="text-[9px] font-bold text-gray-400 mt-2 uppercase">Improvement from previous term</p>
                   </div>
                </div>
             </div>

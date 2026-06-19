@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, Legend
 } from "recharts";
 import MessagingPanel from "./MessagingPanel";
 
@@ -50,6 +50,11 @@ interface StudentProfile {
     awarded_by_name: string;
     term: string;
   }[];
+  class_comparison: {
+    subject_averages: Record<string, number>;
+    class_overall_mean: number;
+    student_overall_mean: number;
+  };
 }
 
 export default function StudentProfileView({ studentId, term, teacherRole, teacherId, isParent }: { studentId: string; term: string; teacherRole?: string; teacherId?: string, isParent?: boolean }) {
@@ -184,6 +189,24 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
     fullMark: 100,
   }));
 
+  const comparisonData = useMemo(() => {
+    const subjects = profile.results.map(r => r.subject);
+    const data = subjects.map(s => ({
+       name: s,
+       "Your Child": profile.results.find(r => r.subject === s)?.average || 0,
+       "Class Average": profile.class_comparison.subject_averages[s] || 0
+    }));
+
+    // Add Overall Mean
+    data.push({
+       name: "OVERALL MEAN",
+       "Your Child": profile.class_comparison.student_overall_mean,
+       "Class Average": profile.class_comparison.class_overall_mean
+    });
+
+    return data;
+  }, [profile]);
+
   return (
     <div className="space-y-6">
       {/* Header Card */}
@@ -259,29 +282,57 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
           {/* Performance Chart Card */}
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
-            <div className="h-80 w-full">
-              {radarData.length > 0 ? (
+            <div className="flex items-center justify-between mb-8">
+               <h2 className="text-xl font-bold text-gray-900">Peer Comparison Analysis</h2>
+               <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                     <div className="h-2 w-2 rounded-full bg-blue-600"></div>
+                     <span className="text-[10px] font-black text-gray-400 uppercase">Child</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                     <div className="h-2 w-2 rounded-full bg-gray-200"></div>
+                     <span className="text-[10px] font-black text-gray-400 uppercase">Class Mean</span>
+                  </div>
+               </div>
+            </div>
+
+            <div className="h-96 w-full">
+              {comparisonData.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                    <PolarGrid stroke="#f1f5f9" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
-                    <Radar
-                      name="Score"
-                      dataKey="score"
-                      stroke="#4f46e5"
-                      fill="#4f46e5"
-                      fillOpacity={0.6}
+                  <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                       dataKey="name"
+                       axisLine={false}
+                       tickLine={false}
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }}
+                       padding={{ left: 10, right: 10 }}
                     />
-                    <Tooltip />
-                  </RadarChart>
+                    <YAxis
+                       domain={[0, 100]}
+                       axisLine={false}
+                       tickLine={false}
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }}
+                    />
+                    <Tooltip
+                       cursor={{ fill: '#f8fafc' }}
+                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    />
+                    <Bar dataKey="Your Child" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={24} />
+                    <Bar dataKey="Class Average" fill="#e2e8f0" radius={[6, 6, 0, 0]} barSize={24} />
+                  </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-gray-400 text-sm">No results to display.</div>
+                <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                   <p className="text-sm font-bold uppercase tracking-widest">Awaiting Results...</p>
+                   <p className="text-[10px] mt-1">Comparison data will appear once class results are approved.</p>
+                </div>
               )}
             </div>
           </div>
+
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
 
           {/* Achievement Badges Section */}
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">

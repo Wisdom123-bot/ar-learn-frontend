@@ -49,7 +49,8 @@ export const TeacherPerformanceSchema = z.object({
   previous_mean: z.number().nullable(),
   change: z.number().nullable(),
   school_subject_mean: z.number().nullable(),
-  value_add: z.number().nullable(),
+  value_add: z.number(),
+  peer_difference: z.number().optional(),
   risk_student_count: z.number(),
 });
 
