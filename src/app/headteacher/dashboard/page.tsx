@@ -230,6 +230,12 @@ export default function HeadteacherDashboardPage() {
         <div className="flex items-center gap-4">
           <StudentSearch />
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
+          <button
+            onClick={() => router.push("/analytics/leaderboard")}
+            className="px-3 py-1.5 text-sm font-black bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition"
+          >
+            🏆 Leaderboard
+          </button>
           <Link
             href="/privacy"
             target="_blank"
