@@ -110,8 +110,6 @@ export default function DeanDashboardPage() {
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -126,6 +124,8 @@ export default function DeanDashboardPage() {
     }
     fetchDashboard(t.school_id, term);
   }, []);
+
+  if (!teacher) return null;
   const [showTimetableModal, setShowTimetableModal] = useState(false);
   const fetchDashboard = async (schoolId: string, t: string) => {
     setLoading(true);

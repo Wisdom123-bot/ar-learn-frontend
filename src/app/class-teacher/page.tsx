@@ -57,8 +57,6 @@ export default function ClassTeacherDashboard() {
   const [savingAtt, setSavingAtt] = useState(false);
   const [attMessage, setAttMessage] = useState("");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -69,6 +67,8 @@ export default function ClassTeacherDashboard() {
     setTeacher(t);
     fetchDashboard(t.teacher_id, term);
   }, [router]);
+
+  if (!teacher) return null;
 
   const fetchDashboard = async (teacherId: string, t: string) => {
     setLoading(true);

@@ -50,8 +50,6 @@ export default function DisciplinePage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -69,6 +67,8 @@ export default function DisciplinePage() {
       }
     }).catch(() => {});
   }, [router]);
+
+  if (!teacher) return null;
 
   // Load students when class changes
   useEffect(() => {

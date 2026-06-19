@@ -90,8 +90,6 @@ export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -106,6 +104,8 @@ export default function DashboardPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [router]);
+
+  if (!teacher) return null;
 
   const handleLogout = () => {
     localStorage.removeItem("teacher");

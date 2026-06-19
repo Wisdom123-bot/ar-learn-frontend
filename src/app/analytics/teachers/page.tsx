@@ -30,6 +30,8 @@ export default function TeacherAnalyticsPage() {
     }
   }, [router]);
 
+  if (!teacher) return null;
+
   // TanStack Query for Teacher Analytics
   const { data: analyticsData, isLoading, error, refetch } = useQuery({
     queryKey: ["teacherAnalytics", teacher?.school_id, term, previousTerm],
@@ -57,7 +59,6 @@ export default function TeacherAnalyticsPage() {
     ];
   }, [data]);
 
-  if (!teacher) return null;
 
   const isAdmin = teacher.role === "headteacher" || teacher.role === "dean";
 

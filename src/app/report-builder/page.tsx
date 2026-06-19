@@ -39,8 +39,6 @@ export default function ReportBuilderPage() {
     show_overall_evaluation: true,
   });
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -61,6 +59,8 @@ export default function ReportBuilderPage() {
     setSchoolId(t.school_id);
     fetchTemplates(t.school_id);
   }, [router]);
+
+  if (!teacher) return null;
 
   const fetchTemplates = async (sid: string) => {
     setLoading(true);

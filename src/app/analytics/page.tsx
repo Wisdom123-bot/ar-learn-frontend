@@ -12,8 +12,6 @@ export default function AnalyticsHubPage() {
   const [teacher, setTeacher] = useState<any>(null);
   const [term, setTerm] = useState("Term 1 2025");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -22,6 +20,8 @@ export default function AnalyticsHubPage() {
     }
     setTeacher(JSON.parse(stored));
   }, [router]);
+
+  if (!teacher) return null;
 
 
   const isAdmin = teacher.role === "headteacher" || teacher.role === "dean";

@@ -27,8 +27,6 @@ export default function ReportsPage() {
   const [printingAll, setPrintingAll] = useState(false);
   const [classSize, setClassSize] = useState<number>(0);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -51,6 +49,8 @@ export default function ReportsPage() {
         .catch(() => {});
     }
   }, [router]);
+
+  if (!teacher) return null;
 
   // Fetch class size when selectedClass changes
   useEffect(() => {

@@ -26,8 +26,6 @@ export default function AdmissionsPage() {
   // Teacher form
   const [teacherName, setTeacherName] = useState("");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -46,6 +44,8 @@ export default function AdmissionsPage() {
       if (res.data.length > 0) setSelectedClass(res.data[0].id);
     });
   }, [router]);
+
+  if (!teacher) return null;
 
   const handleStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

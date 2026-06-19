@@ -18,8 +18,6 @@ export default function ReportsPage() {
   const [message, setMessage] = useState("");
   const [printingAll, setPrintingAll] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -35,6 +33,8 @@ export default function ReportsPage() {
       }).catch(() => {});
     }
   }, [router]);
+
+  if (!teacher) return null;
 
   const downloadClassReports = () => {
     if (!selectedClass) return;

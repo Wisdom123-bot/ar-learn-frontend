@@ -108,8 +108,6 @@ export default function HeadteacherDashboardPage() {
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -127,6 +125,8 @@ export default function HeadteacherDashboardPage() {
       fetchDashboard(t.school_id, term, previousTerm);
     }
   }, []);
+
+  if (!teacher) return null;
 
   const fetchDashboard = async (sid: string, t: string, pt: string) => {
     setLoading(true);

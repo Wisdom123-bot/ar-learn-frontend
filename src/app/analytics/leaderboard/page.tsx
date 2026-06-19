@@ -54,8 +54,6 @@ export default function LeaderboardPage() {
     return results.sort((a,b) => b.mean - a.mean);
   }, [data, scope, teacher]);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -73,6 +71,8 @@ export default function LeaderboardPage() {
        setShowConfirm(true);
     }
   }, []);
+
+  if (!teacher) return null;
 
   const fetchLeaderboard = async (schoolId: string, t: string) => {
     setLoading(true);

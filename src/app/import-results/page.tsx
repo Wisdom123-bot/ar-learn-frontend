@@ -20,8 +20,6 @@ export default function ImportResultsPage() {
   const [message, setMessage] = useState("");
   const [showHelp, setShowHelp] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -40,6 +38,8 @@ export default function ImportResultsPage() {
       setClasses(res.data || []);
     }).catch(() => {});
   }, [router]);
+
+  if (!teacher) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {

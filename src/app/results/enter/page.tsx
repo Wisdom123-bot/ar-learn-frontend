@@ -30,8 +30,6 @@ export default function EnterResultsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -45,6 +43,8 @@ export default function EnterResultsPage() {
       router.push("/login");
     }
   }, [router]);
+
+  if (!teacher) return null;
 
   // TanStack Query for Assignments
   const { data: assignments = [] } = useQuery({

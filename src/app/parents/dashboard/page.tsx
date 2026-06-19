@@ -19,8 +19,6 @@ export default function ParentDashboardPage() {
   const [parent, setParent] = useState<ParentData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
 
-  if (!parent) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("parent");
     if (!stored) {
@@ -29,6 +27,8 @@ export default function ParentDashboardPage() {
     }
     setParent(JSON.parse(stored));
   }, [router]);
+
+  if (!parent) return null;
 
   const handleLogout = () => {
     localStorage.removeItem("parent");

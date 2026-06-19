@@ -52,6 +52,8 @@ export default function AttendancePage() {
     }).catch(console.error);
   }, [router]);
 
+  if (!teacher) return null;
+
   // Fetch students of the selected class directly – no more filtering all students
   useEffect(() => {
     if (!selectedClassId) return;
@@ -133,7 +135,6 @@ export default function AttendancePage() {
     }
   }, [totalPages, currentPage]);
 
-  if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 text-black">

@@ -41,8 +41,6 @@ export default function AssignTeacherPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -68,6 +66,8 @@ export default function AssignTeacherPage() {
       setSubjects(subjectsRes.data || []);
     }).catch(console.error);
   }, [router]);
+
+  if (!teacher) return null;
 
   const addRow = () => {
     setAssignments([...assignments, { class_id: "", subject_id: "", is_class_teacher: false }]);

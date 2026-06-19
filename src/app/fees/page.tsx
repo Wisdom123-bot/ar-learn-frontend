@@ -33,8 +33,6 @@ export default function FeesPage() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -43,6 +41,8 @@ export default function FeesPage() {
     }
     setTeacher(JSON.parse(stored));
   }, [router]);
+
+  if (!teacher) return null;
 
   const searchFeeStudent = async () => {
     if (!searchAdm.trim()) return;

@@ -26,8 +26,6 @@ export default function ImportStudentsPage() {
   const [message, setMessage] = useState("");
   const [useAI, setUseAI] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -51,6 +49,8 @@ export default function ImportStudentsPage() {
       // Let's just assume the teacher's school is the only one they can import to.
     }
   }, [router]);
+
+  if (!teacher) return null;
 
   const fetchClasses = async (schoolId: string) => {
     // Need a GET /schools/{school_id}/classes endpoint. 

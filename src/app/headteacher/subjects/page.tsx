@@ -20,8 +20,6 @@ export default function ManageSubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -36,6 +34,8 @@ export default function ManageSubjectsPage() {
     setTeacher(t);
     fetchSubjects(t.school_id);
   }, []);
+
+  if (!teacher) return null;
 
   const fetchSubjects = async (schoolId: string) => {
     setLoading(true);

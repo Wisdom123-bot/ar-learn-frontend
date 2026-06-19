@@ -38,8 +38,6 @@ export default function TeacherProfilePage() {
   const [phone, setPhone] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -50,6 +48,8 @@ export default function TeacherProfilePage() {
     setTeacher(t);
     fetchProfile(t.teacher_id);
   }, [router]);
+
+  if (!teacher) return null;
 
   const fetchProfile = async (teacherId: string) => {
     try {

@@ -55,8 +55,6 @@ export default function TimetablePage() {
     end_time: "08:40",
   });
 
-  if (!teacher) return null;
-
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -86,6 +84,8 @@ export default function TimetablePage() {
       api.get("/subjects", { params: { school_id: t.school_id } }).then((res) => setSubjects(res.data || [])).catch(() => {});
     }
   }, [router]);
+
+  if (!teacher) return null;
 
   useEffect(() => {
     if (viewType === "class" && !selectedClass) return;
