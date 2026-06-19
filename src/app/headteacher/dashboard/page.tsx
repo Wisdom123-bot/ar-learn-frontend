@@ -77,6 +77,8 @@ function RiskCard({ group, groupStudents, router }: { group: string; groupStuden
   );
 }
 
+const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
+
 export default function HeadteacherDashboardPage() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<any>(null);
@@ -105,7 +107,6 @@ export default function HeadteacherDashboardPage() {
 
   // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
 
   useEffect(() => {
     const stored = localStorage.getItem("teacher");

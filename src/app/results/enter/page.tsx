@@ -103,17 +103,19 @@ export default function EnterResultsPage() {
     return bins;
   }, [results]);
 
-  // Filter students based on search query
-  const filteredStudents = students.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter students based on search query (MEMOIZED to prevent infinite loop)
+  const filteredStudents = useMemo(() => {
+    return students.filter(
+      (s) =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [students, searchQuery]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE);
+  const totalPages = useMemo(() => Math.ceil(filteredStudents.length / PAGE_SIZE), [filteredStudents]);
   const startIdx = currentPage * PAGE_SIZE;
-  const paginatedStudents = filteredStudents.slice(startIdx, startIdx + PAGE_SIZE);
+  const paginatedStudents = useMemo(() => filteredStudents.slice(startIdx, startIdx + PAGE_SIZE), [filteredStudents, startIdx]);
 
   const goToPage = (page: number) => {
     if (page >= 0 && page < totalPages) setCurrentPage(page);

@@ -180,16 +180,17 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
     }
   };
 
-  if (loading) return <div className="p-10 text-center text-gray-400">Loading student profile...</div>;
-  if (!profile) return <div className="p-10 text-center text-red-500">Student not found.</div>;
-
-  const radarData = profile.results.map(r => ({
-    subject: r.subject,
-    score: r.average,
-    fullMark: 100,
-  }));
+  const radarData = useMemo(() => {
+    if (!profile) return [];
+    return profile.results.map(r => ({
+      subject: r.subject,
+      score: r.average,
+      fullMark: 100,
+    }));
+  }, [profile]);
 
   const comparisonData = useMemo(() => {
+    if (!profile) return [];
     const subjects = profile.results.map(r => r.subject);
     const data = subjects.map(s => ({
        name: s,
@@ -206,6 +207,9 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
     return data;
   }, [profile]);
+
+  if (loading) return <div className="p-10 text-center text-gray-400">Loading student profile...</div>;
+  if (!profile) return <div className="p-10 text-center text-red-500">Student not found.</div>;
 
   return (
     <div className="space-y-6">
@@ -333,6 +337,28 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
+            <div className="h-80 w-full">
+              {radarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                    <PolarGrid stroke="#f1f5f9" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
+                    <Radar
+                      name="Score"
+                      dataKey="score"
+                      stroke="#4f46e5"
+                      fill="#4f46e5"
+                      fillOpacity={0.6}
+                    />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm">No results to display.</div>
+              )}
+            </div>
+          </div>
             <div className="h-80 w-full">
               {radarData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
