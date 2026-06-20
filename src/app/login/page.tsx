@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import api from "@/lib/api";
 import { SchoolSchema, TeacherSchema, type School, type Teacher } from "@/lib/schemas";
+import { useAuthStore } from "@/lib/store";
 
 const ROLES = [
   { value: "headteacher", label: "Headteacher" },
@@ -15,6 +16,7 @@ const ROLES = [
 
 export default function UnifiedLoginPage() {
   const router = useRouter();
+  const { setUser, user: loggedInUser } = useAuthStore();
 
   // Step 1: School search
   const [schoolQuery, setSchoolQuery] = useState("");
@@ -57,23 +59,14 @@ export default function UnifiedLoginPage() {
 
   // ---------- Auto‑login if session exists ----------
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        console.log("Auto-login session data:", parsed);
-        const user = TeacherSchema.parse(parsed);
-        if (user.role === "headteacher") {
-          router.push("/headteacher/dashboard");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch (err) {
-        console.error("Session validation failed:", err);
-        localStorage.removeItem("teacher");
+    if (loggedInUser) {
+      if (loggedInUser.role === "headteacher") {
+        router.push("/headteacher/dashboard");
+      } else {
+        router.push("/dashboard");
       }
     }
-  }, [router]);
+  }, [loggedInUser, router]);
 
   // Search schools
   const handleSearch = async () => {
@@ -134,7 +127,7 @@ export default function UnifiedLoginPage() {
       });
       console.log("Validation success:", user);
 
-      localStorage.setItem("teacher", JSON.stringify(user));
+      setUser(user);
       setFailedAttempts(0); // Reset on success
 
       // Redirect based on role

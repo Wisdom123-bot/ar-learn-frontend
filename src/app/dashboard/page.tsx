@@ -88,7 +88,7 @@ function ClassCard({ classId, classInfo, router }: { classId: string; classInfo:
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user: teacher, logout } = useAuthStore();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -97,14 +97,14 @@ export default function DashboardPage() {
   const [showSubModal, setShowSubModal] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
 
     // Fetch students
     api
-      .get(`/teachers/${user.teacher_id}/students`)
+      .get(`/teachers/${teacher.teacher_id}/students`)
       .then((res) => setStudents(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -113,16 +113,11 @@ export default function DashboardPage() {
     api.get("/subscription/status")
       .then(res => {
         setSubStatus(res.data);
-        // Prompt upgrade if basic/expired and hasn't dismissed recently (could add more logic here)
-        if (res.data.tier === "basic" && !res.data.has_pending) {
-          // Maybe don't auto-show every time, but for now let's ensure they see it
-          // setShowSubModal(true);
-        }
       })
       .catch(console.error);
-  }, [router]);
+  }, [teacher, router]);
 
-  if (!user) return null;
+  if (!teacher) return null;
 
   const handleLogout = () => {
     logout();
@@ -169,7 +164,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-black">Welcome, {user.name}</h1>
+            <h1 className="text-xl font-bold text-black">Welcome, {teacher.name}</h1>
             {subStatus?.tier !== "basic" && (
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
                 subStatus?.tier === "elite" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"
@@ -178,7 +173,7 @@ export default function DashboardPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-black">{user.school_name}</p>
+          <p className="text-sm text-black">{teacher.school_name}</p>
         </div>
         <div className="flex items-center gap-4">
           <button
@@ -190,7 +185,7 @@ export default function DashboardPage() {
           <div id="student-search-container">
             <StudentSearch />
           </div>
-          <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
+          <NotificationBell schoolId={user.school_id} teacherId={user.teacher_id} />
           <Link
             href="/privacy"
             target="_blank"
@@ -217,7 +212,7 @@ export default function DashboardPage() {
           { label: "Report Cards", href: "/reports" },
           { label: "Fees", href: "/fees" },
           { label: "My Timetable", href: "/timetable" },
-          ...(user.role === "headteacher" || user.role === "dean"
+          ...(teacher.role === "headteacher" || teacher.role === "dean"
             ? [
                 { label: "Teacher Rankings", href: "/analytics/teachers" },
                 { label: "Headteacher Dashboard", href: "/headteacher/dashboard" },
@@ -244,7 +239,7 @@ export default function DashboardPage() {
         <h2 className="text-lg font-semibold text-black">
           Your Students ({students.length})
         </h2>
-        {(user.role === "headteacher" || user.role === "dean") && (
+        {(teacher.role === "headteacher" || teacher.role === "dean") && (
           <button
             onClick={() => router.push("/students")}
             className="text-xs text-blue-600 font-bold uppercase hover:underline"
