@@ -30,6 +30,10 @@ export default function EnterResultsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
+  // AI CBC State
+  const [analyzingFile, setAnalyzingFile] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+
   useEffect(() => {
     const stored = localStorage.getItem("teacher");
     if (!stored) {
@@ -128,6 +132,24 @@ export default function EnterResultsPage() {
   }, [filteredStudents.length, totalPages, currentPage]);
 
   if (!teacher) return null;
+
+  const handleAiAnalyze = async (file: File) => {
+    setAnalyzingFile(true);
+    setAiAnalysisResult(null);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await api.post("/cbc/analyze-project", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setAiAnalysisResult(res.data.analysis);
+    } catch (err) {
+      console.error("AI Analysis failed", err);
+    } finally {
+      setAnalyzingFile(false);
+    }
+  };
 
   const handleScoreChange = (studentId: string, value: string) => {
     const numValue = parseFloat(value);
@@ -279,6 +301,44 @@ export default function EnterResultsPage() {
           </div>
         </div>
 
+        {/* AI Assistant Module (New) */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-xl text-white relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">✨</div>
+           <div className="relative z-10">
+              <h2 className="text-sm font-black uppercase tracking-widest mb-4">AI CBC Project Assessor</h2>
+              <div className="flex flex-col gap-4">
+                 <p className="text-xs font-medium text-blue-100 leading-relaxed">
+                    Upload a photo of a student's project. Our Intelligence engine will identify competencies and suggest a professional remark.
+                 </p>
+                 <div className="relative">
+                    <input
+                       type="file"
+                       accept="image/*"
+                       capture="environment"
+                       onChange={(e) => e.target.files?.[0] && handleAiAnalyze(e.target.files[0])}
+                       className="hidden"
+                       id="cbc-upload"
+                       disabled={analyzingFile}
+                    />
+                    <label
+                       htmlFor="cbc-upload"
+                       className={`flex items-center justify-center gap-3 w-full py-3 bg-white text-blue-600 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-pointer hover:bg-blue-50 transition-all ${analyzingFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                       {analyzingFile ? "Analyzing Architecture..." : "📷 Analyze Student Work"}
+                    </label>
+                 </div>
+
+                 {aiAnalysisResult && (
+                    <div className="mt-2 p-4 bg-white/10 rounded-xl border border-white/20 animate-in zoom-in-95 duration-500">
+                       <p className="text-[10px] font-black uppercase text-blue-200">AI Suggested Assessment</p>
+                       <p className="text-sm font-bold mt-1">{aiAnalysisResult.competency}: {aiAnalysisResult.level}</p>
+                       <p className="text-[10px] text-blue-100 italic mt-2 leading-tight">"{aiAnalysisResult.remark}"</p>
+                    </div>
+                 )}
+              </div>
+           </div>
+        </div>
+
         {/* Real-time Visualization */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100" role="region" aria-label="Score Distribution Chart">
            <div className="flex items-center justify-between mb-4">
@@ -288,8 +348,8 @@ export default function EnterResultsPage() {
               </div>
               <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase">Distribution</span>
            </div>
-           <div className="h-40 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+           <div className="h-40 w-full min-h-[160px] min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minHeight={160} minWidth={0} debounce={50}>
                 <BarChart data={distributionData} aria-label="Score Distribution Bar Chart">
                    <XAxis dataKey="name" hide />
                    <Tooltip

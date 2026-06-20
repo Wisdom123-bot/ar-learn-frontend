@@ -145,8 +145,8 @@ export default function TeacherAnalyticsPage() {
                {/* Radar Chart for Single Teacher or Top Performer */}
                <div className="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100" role="region" aria-label="Performance Competency Map">
                   <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Competency Map</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="h-64 min-h-[256px] min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={256} minWidth={0} debounce={50}>
                       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData} aria-label="Teacher Competency Radar Chart">
                         <PolarGrid stroke="#f1f5f9" />
                         <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} />

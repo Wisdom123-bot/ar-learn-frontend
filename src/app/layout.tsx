@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AIChatWidget from "@/components/AIChatWidget";
+import SyncIndicator from "@/components/SyncIndicator";
 import Providers from "@/components/Providers";
 
 const geistSans = Geist({
@@ -38,6 +39,7 @@ export default function RootLayout({
           {children}
         </Providers>
         <AIChatWidget />
+        <SyncIndicator />
       </body>
     </html>
   );

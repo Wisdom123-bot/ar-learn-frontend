@@ -39,9 +39,24 @@ interface SchoolDetails {
   students: Student[];
 }
 
+interface SubscriptionRequest {
+  id: string;
+  school_id: string;
+  requested_tier: string;
+  mpesa_message: string;
+  status: string;
+  student_count_at_request: number;
+  created_at: string;
+  schools: {
+    name: string;
+    student_count: number;
+  };
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [schools, setSchools] = useState<School[]>([]);
+  const [pendingSubs, setPendingSubs] = useState<SubscriptionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [token, setToken] = useState("");
@@ -90,10 +105,12 @@ export default function AdminDashboardPage() {
 
     const initialFetch = async () => {
       try {
-        const res = await api.get("/admin/schools", {
-          headers: { Authorization: `Bearer ${stored}` },
-        });
-        setSchools(res.data || []);
+        const [schoolsRes, subsRes] = await Promise.all([
+          api.get("/admin/schools", { headers: { Authorization: `Bearer ${stored}` } }),
+          api.get("/admin/subscriptions/pending", { headers: { Authorization: `Bearer ${stored}` } })
+        ]);
+        setSchools(schoolsRes.data || []);
+        setPendingSubs(subsRes.data || []);
       } catch (err: any) {
         if (err.response?.status === 403) {
           localStorage.removeItem("admin_token");
@@ -184,6 +201,33 @@ export default function AdminDashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
     router.push("/admin/login");
+  };
+
+  const handleApproveSub = async (requestId: string) => {
+    try {
+      await api.post(`/admin/subscriptions/${requestId}/approve`, null, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPendingSubs(prev => prev.filter(r => r.id !== requestId));
+      setMessage("Subscription approved.");
+      // Refresh schools to show new tiers
+      const res = await api.get("/admin/schools", { headers: { Authorization: `Bearer ${token}` } });
+      setSchools(res.data || []);
+    } catch {
+      setMessage("Failed to approve.");
+    }
+  };
+
+  const handleDeclineSub = async (requestId: string) => {
+    try {
+      await api.post(`/admin/subscriptions/${requestId}/decline`, null, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPendingSubs(prev => prev.filter(r => r.id !== requestId));
+      setMessage("Subscription declined.");
+    } catch {
+      setMessage("Failed to decline.");
+    }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -342,6 +386,55 @@ export default function AdminDashboardPage() {
       {message && (
         <div className="mb-4 p-3 bg-gray-800 rounded-lg text-sm text-green-400 border border-gray-700">
           {message}
+        </div>
+      )}
+
+      {/* Pending Subscriptions Section */}
+      {pendingSubs.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+            Pending Subscriptions ({pendingSubs.length})
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {pendingSubs.map((req) => (
+              <div key={req.id} className="bg-gray-800 border border-yellow-700/50 rounded-2xl p-6 shadow-xl">
+                 <div className="flex flex-col md:flex-row justify-between gap-6">
+                    <div className="flex-1">
+                       <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-lg font-bold text-white">{req.schools?.name}</h3>
+                          <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                            req.requested_tier === "elite" ? "bg-purple-900 text-purple-300" : "bg-blue-900 text-blue-300"
+                          }`}>
+                            {req.requested_tier}
+                          </span>
+                       </div>
+                       <p className="text-sm text-gray-400 mb-4">
+                         {req.schools?.student_count} Students • Requested {new Date(req.created_at).toLocaleString()}
+                       </p>
+                       <div className="bg-gray-900 p-4 rounded-xl border border-gray-700">
+                          <p className="text-[10px] font-black text-gray-500 uppercase mb-2">Pasted M-Pesa Message</p>
+                          <p className="text-sm font-medium text-gray-300 whitespace-pre-wrap">{req.mpesa_message}</p>
+                       </div>
+                    </div>
+                    <div className="flex flex-row md:flex-col gap-3 shrink-0">
+                       <button
+                         onClick={() => handleApproveSub(req.id)}
+                         className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-green-900/20"
+                       >
+                         Approve
+                       </button>
+                       <button
+                         onClick={() => handleDeclineSub(req.id)}
+                         className="flex-1 px-6 py-3 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-900/50 rounded-xl font-bold transition-all"
+                       >
+                         Decline
+                       </button>
+                    </div>
+                 </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

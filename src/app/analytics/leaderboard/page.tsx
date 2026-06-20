@@ -32,18 +32,18 @@ export default function LeaderboardPage() {
   const [scope, setScope] = useState<"national" | "county">("national");
 
   const chartData = useMemo(() => {
-    if (!data) return [];
+    if (!data || !teacher) return [];
     const list = scope === "national" ? (data.national_top_5 || []) : (data.county_top_5 || []);
 
     // Ensure current school is in the list for comparison if it's not top 5
     const results = list.map(s => ({
        name: s.school_name,
        mean: s.school_mean,
-       isMe: s.school_id === teacher?.school_id
+       isMe: s.school_id === teacher.school_id
     }));
 
     const isMeInTop5 = results.some(r => r.isMe);
-    if (!isMeInTop5 && data && teacher) {
+    if (!isMeInTop5) {
        results.push({
           name: data.school_name + " (You)",
           mean: data.school_mean,
@@ -206,8 +206,8 @@ export default function LeaderboardPage() {
                     </div>
                  </div>
 
-                 <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%" minHeight={0}>
+                 <div className="h-80 w-full min-h-[320px] min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={320} minWidth={0} debounce={50}>
                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                           <XAxis

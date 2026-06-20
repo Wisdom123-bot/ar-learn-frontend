@@ -106,22 +106,54 @@ export default function AIChatWidget() {
     setInput("");
     setLoading(true);
 
+    // Initial empty assistant message that we will fill via stream
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
     try {
-      const res = await api.post(
-        "/ai-assistant/ask",
-        {
+      const user = JSON.parse(localStorage.getItem("teacher") || "{}");
+      const token = user.token;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai-assistant/ask`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
           school_id: schoolId || "guest",
           question,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Stream failed");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          fullContent += chunk;
+
+          // Update the last message (the assistant one) with the new chunk
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            newMessages[newMessages.length - 1].content = fullContent;
+            return newMessages;
+          });
         }
-      );
-      const answer = res.data.answer || "I'm not sure how to answer that.";
-      setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
+      }
     } catch (err) {
-      console.error("AIChatWidget: API call failed", err);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, something went wrong. Please try again." },
-      ]);
+      console.error("AIChatWidget: Streaming failed", err);
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1].content = "Sorry, something went wrong. Please try again.";
+        return newMessages;
+      });
     } finally {
       setLoading(false);
     }

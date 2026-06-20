@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import BackButton from "@/components/BackButton";
 
 interface Template {
   id: string;
   name: string;
   logo_url: string;
+  motto: string;
+  phone: string;
+  email: string;
   primary_color: string;
   secondary_color: string;
   show_attendance: boolean;
@@ -31,6 +35,9 @@ export default function ReportBuilderPage() {
   const [form, setForm] = useState({
     name: "Default Template",
     logo_url: "",
+    motto: "",
+    phone: "",
+    email: "",
     primary_color: "#1e3a8a",
     secondary_color: "#f0f4ff",
     show_attendance: true,
@@ -60,8 +67,6 @@ export default function ReportBuilderPage() {
     fetchTemplates(t.school_id);
   }, [router]);
 
-  if (!teacher) return null;
-
   const fetchTemplates = async (sid: string) => {
     setLoading(true);
     try {
@@ -79,6 +84,9 @@ export default function ReportBuilderPage() {
     setForm({
       name: "",
       logo_url: "",
+      motto: "",
+      phone: "",
+      email: "",
       primary_color: "#1e3a8a",
       secondary_color: "#f0f4ff",
       show_attendance: true,
@@ -94,6 +102,9 @@ export default function ReportBuilderPage() {
     setForm({
       name: t.name,
       logo_url: t.logo_url,
+      motto: t.motto || "",
+      phone: t.phone || "",
+      email: t.email || "",
       primary_color: t.primary_color,
       secondary_color: t.secondary_color,
       show_attendance: t.show_attendance,
@@ -128,65 +139,85 @@ export default function ReportBuilderPage() {
     fetchTemplates(schoolId);
   };
 
+  if (!teacher) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-800">Report Card Builder</h1>
-          <button onClick={() => router.back()} className="text-gray-500 text-sm">
-            ← Back
-          </button>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 text-black">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Report Card Builder</h1>
+            <p className="text-sm text-gray-500 font-medium uppercase tracking-widest">Premium Intelligence Suite</p>
+          </div>
+          <BackButton />
         </div>
 
         <button
           onClick={openCreate}
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium"
+          className="mb-8 px-6 py-3 bg-gray-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-600 shadow-xl transition-all active:scale-95"
         >
           + New Template
         </button>
 
         {message && (
-          <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-700">
+          <div className={`mb-6 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
+            message.toLowerCase().includes("error") || message.toLowerCase().includes("failed")
+              ? "bg-red-50 text-red-600 border border-red-100"
+              : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+          }`}>
+            <div className={`h-2 w-2 rounded-full ${message.toLowerCase().includes("error") ? "bg-red-500" : "bg-emerald-500"}`}></div>
             {message}
           </div>
         )}
 
         {loading ? (
-          <p className="text-center text-gray-400 py-10">Loading templates…</p>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Loading Architecture...</p>
+          </div>
         ) : templates.length === 0 && !showForm ? (
-          <p className="text-center text-gray-400 py-10">
-            No templates yet. Create one to get started.
-          </p>
+          <div className="bg-white rounded-[2.5rem] p-20 text-center border border-gray-100 shadow-sm">
+            <div className="text-6xl mb-6">📄</div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">No active templates</h3>
+            <p className="text-gray-500 text-sm max-w-xs mx-auto">Build your first custom report card template to start issuing professional documents.</p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {templates.map((t) => (
               <div
                 key={t.id}
-                className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between"
+                className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between group hover:border-blue-200 transition-all"
               >
                 <div>
-                  <h3 className="font-semibold">{t.name}</h3>
-                  <div className="flex gap-2 mt-1">
-                    <span
-                      className="w-5 h-5 rounded-full border"
-                      style={{ backgroundColor: t.primary_color }}
-                    ></span>
-                    <span
-                      className="w-5 h-5 rounded-full border"
-                      style={{ backgroundColor: t.secondary_color }}
-                    ></span>
+                  <div className="flex justify-between items-start mb-4">
+                     <h3 className="text-lg font-black text-gray-900 leading-tight">{t.name}</h3>
+                     <div className="flex -space-x-2">
+                        <span
+                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                          style={{ backgroundColor: t.primary_color }}
+                        ></span>
+                        <span
+                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                          style={{ backgroundColor: t.secondary_color }}
+                        ></span>
+                     </div>
                   </div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Modified</p>
+                  <p className="text-xs font-medium text-gray-600 mb-6">{new Date(t.updated_at).toLocaleDateString()}</p>
                 </div>
+
                 <div className="flex gap-2">
-                  <button onClick={() => openEdit(t)} className="text-sm text-blue-600">
-                    Edit
+                  <button
+                    onClick={() => openEdit(t)}
+                    className="flex-1 py-3 bg-gray-50 text-blue-600 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 hover:text-white transition-all"
+                  >
+                    Configure
                   </button>
                   <button
                     onClick={() => handleDelete(t.id)}
-                    className="text-sm text-red-600"
+                    className="px-4 py-3 bg-gray-50 text-red-400 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all"
                   >
-                    Delete
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                   </button>
                 </div>
               </div>
@@ -195,92 +226,154 @@ export default function ReportBuilderPage() {
         )}
 
         {showForm && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
-              <h2 className="text-lg font-bold mb-4">
-                {editingId ? "Edit Template" : "New Template"}
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Template Name</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full border rounded-lg p-2 text-sm"
-                    required
-                  />
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-8 md:p-10">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase italic">
+                    {editingId ? "Modify Template" : "New Architecture"}
+                  </h2>
+                  <button onClick={() => setShowForm(false)} className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-900 transition-all">✕</button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Logo URL</label>
-                  <input
-                    type="url"
-                    value={form.logo_url}
-                    onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-                    className="w-full border rounded-lg p-2 text-sm"
-                    placeholder="https://example.com/logo.png"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Primary Color</label>
-                    <input
-                      type="color"
-                      value={form.primary_color}
-                      onChange={(e) =>
-                        setForm({ ...form, primary_color: e.target.value })
-                      }
-                      className="w-full h-10 border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Secondary Color</label>
-                    <input
-                      type="color"
-                      value={form.secondary_color}
-                      onChange={(e) =>
-                        setForm({ ...form, secondary_color: e.target.value })
-                      }
-                      className="w-full h-10 border rounded-lg"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { key: "show_attendance", label: "Attendance Section" },
-                    { key: "show_fee_status", label: "Fee Status Section" },
-                    { key: "show_teacher_remarks", label: "Subject Teacher Remarks" },
-                    { key: "show_overall_evaluation", label: "Overall Evaluation" },
-                  ].map((opt) => (
-                    <label key={opt.key} className="flex items-center gap-2">
+
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Identity Section */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Institutional Identity</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1">Template Label</label>
+                        <input
+                          type="text"
+                          value={form.name}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="e.g. End of Term 1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1">School Motto</label>
+                        <input
+                          type="text"
+                          value={form.motto}
+                          onChange={(e) => setForm({ ...form, motto: e.target.value })}
+                          className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="Strive for Excellence"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1">
+                        Logo URL
+                        <span className="ml-2 lowercase font-medium text-gray-300 tracking-normal">(PNG/JPG/SVG, transparent bg recommended)</span>
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={(form as any)[opt.key]}
-                        onChange={(e) =>
-                          setForm({ ...form, [opt.key]: e.target.checked })
-                        }
-                        className="rounded"
+                        type="url"
+                        value={form.logo_url}
+                        onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                        className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="https://your-school.com/logo.png"
                       />
-                      <span className="text-sm">{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-semibold"
-                  >
-                    {editingId ? "Update" : "Create"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                      <p className="mt-2 text-[10px] text-gray-400 leading-relaxed font-medium italic">
+                        Tip: Upload your logo to a service like PostImages or ImgBB and paste the direct link here. Use high-resolution images for crisp printing.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Communication Section */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Communication Interface</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1">Contact Phone</label>
+                        <input
+                          type="text"
+                          value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="+254 700 000 000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1">Official Email</label>
+                        <input
+                          type="email"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="info@school.ac.ke"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Aesthetic Section */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Visual Signature</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                        <label className="text-xs font-bold text-gray-500 uppercase">Primary</label>
+                        <input
+                          type="color"
+                          value={form.primary_color}
+                          onChange={(e) => setForm({ ...form, primary_color: e.target.value })}
+                          className="h-10 w-10 border-none rounded-lg cursor-pointer bg-transparent"
+                        />
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                        <label className="text-xs font-bold text-gray-500 uppercase">Secondary</label>
+                        <input
+                          type="color"
+                          value={form.secondary_color}
+                          onChange={(e) => setForm({ ...form, secondary_color: e.target.value })}
+                          className="h-10 w-10 border-none rounded-lg cursor-pointer bg-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Structure Section */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Data Matrix</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { key: "show_attendance", label: "Attendance Metrics" },
+                        { key: "show_fee_status", label: "Financial Status" },
+                        { key: "show_teacher_remarks", label: "Professional Remarks" },
+                        { key: "show_overall_evaluation", label: "AI Executive Summary" },
+                      ].map((opt) => (
+                        <label key={opt.key} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-blue-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={(form as any)[opt.key]}
+                            onChange={(e) => setForm({ ...form, [opt.key]: e.target.checked })}
+                            className="h-5 w-5 rounded-lg border-gray-200 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">{opt.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-gray-100">
+                    <button
+                      type="submit"
+                      className="flex-1 py-5 bg-gray-900 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest hover:bg-blue-600 shadow-2xl transition-all active:scale-95"
+                    >
+                      {editingId ? "Update System" : "Initialize Template"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowForm(false)}
+                      className="px-8 py-5 bg-gray-100 text-gray-400 rounded-[1.5rem] font-black uppercase text-xs tracking-widest hover:bg-gray-200 hover:text-gray-900 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         )}

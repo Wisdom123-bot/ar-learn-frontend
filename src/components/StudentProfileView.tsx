@@ -60,6 +60,7 @@ interface StudentProfile {
 export default function StudentProfileView({ studentId, term, teacherRole, teacherId, isParent }: { studentId: string; term: string; teacherRole?: string; teacherId?: string, isParent?: boolean }) {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [aiSummary, setAiSummary] = useState("");
+  const [forecast, setForecast] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingAI, setLoadingAI] = useState(false);
 
@@ -91,8 +92,12 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
       setRemarkText(res.data.class_teacher_remark || "");
 
       // Also fetch available badges for awarding
-      const badgeRes = await api.get("/badges/");
+      const badgeRes = await api.get("/badges");
       setAvailableBadges(badgeRes.data);
+
+      // Fetch Forecast
+      const forecastRes = await api.get(`/analytics/forecast/${studentId}`);
+      setForecast(forecastRes.data);
     } catch (err) {
       console.error("Failed to load profile", err);
     } finally {
@@ -285,6 +290,56 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
           </div>
 
           {/* Performance Chart Card */}
+          {forecast && (
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+               <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 uppercase italic tracking-tight">Intelligence Forecast</h2>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Projected performance trajectory</p>
+                  </div>
+                  <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${
+                    forecast.trend === 'improving' ? 'bg-emerald-50 text-emerald-600' :
+                    forecast.trend === 'declining' ? 'bg-rose-50 text-rose-600' : 'bg-gray-50 text-gray-400'
+                  }`}>
+                    {forecast.trend} Trend
+                  </div>
+               </div>
+
+               <div className="h-64 w-full min-h-[256px] min-w-0">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={256} minWidth={0} debounce={50}>
+                    <LineChart data={[...forecast.historical_data, forecast.forecasted_mean].map((val, i) => ({ step: i, score: val }))}>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                       <XAxis dataKey="step" hide />
+                       <YAxis domain={[0, 100]} hide />
+                       <Tooltip
+                          contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold'}}
+                          labelFormatter={(val) => val === forecast.historical_data.length ? "FORECAST" : `Step ${val}`}
+                       />
+                       <Line
+                          type="monotone"
+                          dataKey="score"
+                          stroke="#4f46e5"
+                          strokeWidth={4}
+                          dot={{ r: 4, fill: '#4f46e5', strokeWidth: 2, stroke: '#fff' }}
+                          activeDot={{ r: 8 }}
+                       />
+                    </LineChart>
+                  </ResponsiveContainer>
+               </div>
+
+               <div className="mt-6 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Target</p>
+                    <p className="text-2xl font-black text-indigo-900">{forecast.forecasted_mean}%</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Historical Mean</p>
+                    <p className="text-xl font-bold text-gray-700">{forecast.current_mean}%</p>
+                  </div>
+               </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-8">
                <h2 className="text-xl font-bold text-gray-900">Peer Comparison Analysis</h2>
@@ -300,9 +355,9 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
                </div>
             </div>
 
-            <div className="h-96 w-full">
+            <div className="h-96 w-full min-h-[384px] min-w-0">
               {comparisonData.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%" minHeight={0}>
+                <ResponsiveContainer width="100%" height="100%" minHeight={384} minWidth={0} debounce={50}>
                   <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
@@ -337,9 +392,9 @@ export default function StudentProfileView({ studentId, term, teacherRole, teach
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Subject Proficiency</h2>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full min-h-[320px] min-w-0">
               {radarData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%" minHeight={0}>
+                <ResponsiveContainer width="100%" height="100%" minHeight={320} minWidth={0} debounce={50}>
                   <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                     <PolarGrid stroke="#f1f5f9" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />

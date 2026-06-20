@@ -7,6 +7,8 @@ import NotificationBell from "@/components/NotificationBell";
 import api from "@/lib/api";
 import StudentSearch from "@/components/StudentSearch";
 import OnboardingTour from "@/components/OnboardingTour";
+import SubscriptionModal from "@/components/SubscriptionModal";
+import { useAuthStore } from "@/lib/store";
 
 interface Student {
   id: string;
@@ -86,29 +88,44 @@ function ClassCard({ classId, classInfo, router }: { classId: string; classInfo:
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user, logout } = useAuthStore();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Subscription State
+  const [subStatus, setSubStatus] = useState<any>(null);
+  const [showSubModal, setShowSubModal] = useState(false);
+
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!user) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
+
+    // Fetch students
     api
-      .get(`/teachers/${t.teacher_id}/students`)
+      .get(`/teachers/${user.teacher_id}/students`)
       .then((res) => setStudents(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    // Fetch subscription status
+    api.get("/subscription/status")
+      .then(res => {
+        setSubStatus(res.data);
+        // Prompt upgrade if basic/expired and hasn't dismissed recently (could add more logic here)
+        if (res.data.tier === "basic" && !res.data.has_pending) {
+          // Maybe don't auto-show every time, but for now let's ensure they see it
+          // setShowSubModal(true);
+        }
+      })
+      .catch(console.error);
   }, [router]);
 
-  if (!teacher) return null;
+  if (!user) return null;
 
   const handleLogout = () => {
-    localStorage.removeItem("teacher");
+    logout();
     router.push("/login");
   };
 
@@ -122,13 +139,54 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <OnboardingTour steps={onboardingSteps} tourKey="teacher_dashboard" />
+      <SubscriptionModal
+        isOpen={showSubModal}
+        onClose={() => setShowSubModal(false)}
+        status={subStatus}
+      />
+
+      {/* Subscription Banner */}
+      {subStatus?.has_pending && (
+        <div className="mb-6 p-4 bg-blue-600 text-white rounded-[2rem] shadow-lg shadow-blue-200 flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+           <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center animate-pulse">
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
+                 </svg>
+              </div>
+              <div>
+                 <p className="font-black text-sm uppercase tracking-wider">Verification in Progress</p>
+                 <p className="text-xs font-bold text-blue-100">Our team is reviewing your M-Pesa payment. Hang tight!</p>
+              </div>
+           </div>
+           <div className="hidden sm:block text-[10px] font-black uppercase bg-white/20 px-3 py-1 rounded-full">
+              ETA: ~10 Mins
+           </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-black">Welcome, {teacher.name}</h1>
-          <p className="text-sm text-black">{teacher.school_name}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-black">Welcome, {user.name}</h1>
+            {subStatus?.tier !== "basic" && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                subStatus?.tier === "elite" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"
+              }`}>
+                {subStatus?.tier}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-black">{user.school_name}</p>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setShowSubModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl text-sm font-black shadow-lg shadow-blue-100 hover:scale-105 transition-transform"
+          >
+            Subscription
+          </button>
           <div id="student-search-container">
             <StudentSearch />
           </div>
@@ -159,7 +217,7 @@ export default function DashboardPage() {
           { label: "Report Cards", href: "/reports" },
           { label: "Fees", href: "/fees" },
           { label: "My Timetable", href: "/timetable" },
-          ...(teacher.role === "headteacher" || teacher.role === "dean"
+          ...(user.role === "headteacher" || user.role === "dean"
             ? [
                 { label: "Teacher Rankings", href: "/analytics/teachers" },
                 { label: "Headteacher Dashboard", href: "/headteacher/dashboard" },
@@ -186,7 +244,7 @@ export default function DashboardPage() {
         <h2 className="text-lg font-semibold text-black">
           Your Students ({students.length})
         </h2>
-        {(teacher.role === "headteacher" || teacher.role === "dean") && (
+        {(user.role === "headteacher" || user.role === "dean") && (
           <button
             onClick={() => router.push("/students")}
             className="text-xs text-blue-600 font-bold uppercase hover:underline"

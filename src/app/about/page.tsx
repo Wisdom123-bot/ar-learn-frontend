@@ -32,7 +32,7 @@ export default function AboutPage() {
         <p className="text-xl md:text-2xl text-slate-600 leading-relaxed">
           Ar-Learn is a next-generation school management and predictive analytics platform.
           We bridge the gap between administrative data and academic success using
-          Machine Learning and Agentic AI.
+          Machine Learning and Top-Tier AI Intelligence.
         </p>
       </header>
 
@@ -59,8 +59,9 @@ export default function AboutPage() {
                 </p>
                 <ul className="space-y-4">
                   <FeatureItem title="Smart Result Entry" desc="Bulk upload exam scores with instant mean calculations." />
+                  <FeatureItem title="Vision CBC Assessor" label="NEW" desc="Upload project photos for AI-powered competency tagging." />
                   <FeatureItem title="Digital Register" label="Attendance" desc="Mark class attendance in 30 seconds with automatic parent alerts." />
-                  <FeatureItem title="Personal Timetables" desc="View your teaching schedule anytime on any device." />
+                  <FeatureItem title="Offline Sync" label="RURAL READY" desc="Record marks or attendance without internet; auto-sync when online." />
                 </ul>
               </div>
               <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
@@ -88,9 +89,10 @@ export default function AboutPage() {
                   attendance, and fee status in real-time.
                 </p>
                 <ul className="space-y-4">
-                  <FeatureItem title="Parent Portal" desc="Access report cards and exam analysis from your smartphone." />
+                  <FeatureItem title="Real-time Messaging" label="NEW" desc="Chat directly with class teachers about student performance." />
                   <FeatureItem title="Fee Tracking" desc="View balances, payment history, and receive instant digital receipts." />
                   <FeatureItem title="Behavior Alerts" desc="Get notified about disciplinary incidents or positive badges." />
+                  <FeatureItem title="Growth Forecasts" desc="See AI-predicted final grades based on current trends." />
                 </ul>
               </div>
               <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
@@ -124,6 +126,7 @@ export default function AboutPage() {
                 </p>
                 <ul className="space-y-4">
                   <FeatureItem title="Performance Trends" desc="See how you are performing in every subject compared to last term." />
+                  <FeatureItem title="Intelligence Forecast" label="ML" desc="Visual performance trajectory projecting your next exam target." />
                   <FeatureItem title="Weakness Detection" desc="The AI identifies topics you struggle with and suggests revision." />
                   <FeatureItem title="Badge System" desc="Earn digital rewards for attendance, discipline, and academic growth." />
                 </ul>
@@ -149,8 +152,9 @@ export default function AboutPage() {
                 </p>
                 <ul className="space-y-4">
                   <FeatureItem title="ML Risk Engine" desc="Identify students likely to drop grades weeks before they do." />
-                  <FeatureItem title="Staff Performance" desc="Analyze teacher value-add scores across terms." />
+                  <FeatureItem title="Staff Performance" desc="Analyze teacher value-add scores and longitudinal impact." />
                   <FeatureItem title="Financial Deficit" desc="Automatic calculation of expected revenue vs actual collections." />
+                  <FeatureItem title="Custom Report Builder" label="PREMIUM" desc="Fully branded report cards with school motto and colors." />
                 </ul>
               </div>
               <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
@@ -170,75 +174,59 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- Master Feature List --- */}
+      {/* --- Tiered Feature List --- */}
       <section className="py-24 px-6 bg-slate-900 text-white rounded-t-[4rem]">
         <div className="max-w-7xl mx-auto space-y-20">
           <div className="text-center space-y-4">
-            <h2 className="text-4xl md:text-5xl font-bold">Full Feature Suite</h2>
+            <h2 className="text-4xl md:text-5xl font-bold italic tracking-tight">Software Capabilities by Tier</h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              A comprehensive toolset for every department in your school.
+              From foundational operations to elite artificial intelligence.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
             <FeatureCard
-              title="Academic Management"
+              title="Basic: Foundation"
+              subtitle="Essential school management"
               features={[
-                "CAT & Exam Score Entry",
-                "Automated Mean Calculations",
-                "Digital Report Card Generation",
-                "CBC Assessment Support",
-                "Student Performance Ranking"
+                "Student Admissions & IDs",
+                "Teacher Onboarding",
+                "Digital Attendance Register",
+                "CAT & Exam Score Archival",
+                "Basic Student Performance Mean",
+                "Incident & Discipline Logs",
+                "Standard Fee Balance Tracking",
+                "Subject Teacher Allocation"
               ]}
             />
             <FeatureCard
-              title="Student Welfare"
+              title="Standard: Growth"
+              subtitle="Branding & Professionalism"
               features={[
-                "Daily Digital Attendance",
-                "Discipline Incident Tracking",
-                "Student Rewards & Badges",
-                "Predictive Risk Identification",
-                "Admission & Enrollment"
+                "Branded Report Card Builder",
+                "Custom School Motto & Logo",
+                "Parent-Teacher Messaging Hub",
+                "Automated School Timetabling",
+                "National & County Rankings",
+                "Student Badge & Reward System",
+                "Financial Deficit Analytics",
+                "High-Volume Bulk Data Tools",
+                "System-Wide Audit Logging"
               ]}
             />
             <FeatureCard
-              title="Financial Controls"
+              title="Elite: Visionary"
+              subtitle="Artificial Intelligence & ML"
               features={[
-                "Real-time Fee Balances",
-                "Payment Recording & Receipts",
-                "School Revenue Forecasting",
-                "Termly Deficit Calculation",
-                "Financial Export (Excel/CSV)"
-              ]}
-            />
-            <FeatureCard
-              title="Operations & Logistics"
-              features={[
-                "Automated Timetable Creation",
-                "Teacher Subject Allocation",
-                "Classroom Management",
-                "Bulk SMS Notifications",
-                "Staff Performance Analytics"
-              ]}
-            />
-            <FeatureCard
-              title="AI & Intelligence"
-              features={[
-                "10/10 Agentic AI Assistant",
-                "Natural Language Queries",
-                "Automated Student Summaries",
-                "Multi-step Data Reasoning",
-                "ML-based Performance Prediction"
-              ]}
-            />
-            <FeatureCard
-              title="Administration"
-              features={[
-                "Role-Based Access Control",
-                "Secure JWT Authentication",
-                "System-wide Audit Logs",
-                "Cloud Data Backups",
-                "Multi-Campus Support"
+                "Top-Tier Multimodal Vision",
+                "AI-Powered Project Grading",
+                "ML Grade Trend Forecasting",
+                "Predictive Failure & Risk Alerts",
+                "Natural Language AI Assistant",
+                "Offline-First Rural Sync Engine",
+                "Atomic Financial Transactions",
+                "Multi-Tenant Scalable Architecture",
+                "Secure JWT-Signed Identity"
               ]}
             />
           </div>
@@ -290,7 +278,7 @@ function FeatureItem({ title, label, desc }: any) {
       <div className="flex items-center gap-3">
         <div className="w-2 h-2 bg-[#2563EB] rounded-full"></div>
         <div className="font-bold text-slate-900">
-          {title} {label && <span className="ml-2 text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-widest">{label}</span>}
+          {title} {label && <span className="ml-2 text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">{label}</span>}
         </div>
       </div>
       <p className="text-slate-500 text-sm ml-5">{desc}</p>
@@ -321,10 +309,13 @@ function BadgeItem({ title, icon, color }: any) {
   );
 }
 
-function FeatureCard({ title, features }: any) {
+function FeatureCard({ title, subtitle, features }: any) {
   return (
-    <div className="space-y-6">
-      <h4 className="text-xl font-bold border-b border-slate-800 pb-4">{title}</h4>
+    <div className="space-y-4">
+      <div className="border-b border-slate-800 pb-4">
+         <h4 className="text-xl font-black text-white italic tracking-tight uppercase">{title}</h4>
+         <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1">{subtitle}</p>
+      </div>
       <ul className="space-y-3">
         {features.map((f: string) => (
           <li key={f} className="flex items-center gap-3 text-slate-400 text-sm font-medium hover:text-white transition-colors">
