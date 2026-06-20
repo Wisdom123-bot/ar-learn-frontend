@@ -29,7 +29,7 @@ interface AssignmentRow {
 
 export default function AssignTeacherPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);       // logged‑in user
+  const { user: teacher } = useAuthStore();
   const [schoolId, setSchoolId] = useState("");
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -42,30 +42,27 @@ export default function AssignTeacherPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher" && t.role !== "dean") {
+    if (teacher.role !== "headteacher" && teacher.role !== "dean") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
-    setSchoolId(t.school_id);
+    setSchoolId(teacher.school_id);
 
     // Fetch school's teachers, classes, subjects
     Promise.all([
-      api.get(`/schools/${t.school_id}/teachers`),
-      api.get(`/schools/${t.school_id}/classes`),
-      api.get("/subjects", { params: { school_id: t.school_id } }),
+      api.get(`/schools/${teacher.school_id}/teachers`),
+      api.get(`/schools/${teacher.school_id}/classes`),
+      api.get("/subjects", { params: { school_id: teacher.school_id } }),
     ]).then(([teachersRes, classesRes, subjectsRes]) => {
       setTeachers(teachersRes.data || []);
       setClasses(classesRes.data || []);
       setSubjects(subjectsRes.data || []);
     }).catch(console.error);
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

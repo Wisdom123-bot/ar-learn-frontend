@@ -21,9 +21,11 @@ interface LeaderboardData {
   subject_means: Record<string, number>;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function LeaderboardPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
   const [loading, setLoading] = useState(false);
@@ -55,18 +57,15 @@ export default function LeaderboardPage() {
   }, [data, scope, teacher]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
 
-    const isOptedIn = localStorage.getItem(`leaderboard_optin_${t.school_id}`);
+    const isOptedIn = localStorage.getItem(`leaderboard_optin_${teacher.school_id}`);
     if (isOptedIn) {
        setOptedIn(true);
-       fetchLeaderboard(t.school_id, term);
+       fetchLeaderboard(teacher.school_id, term);
     } else {
        setShowConfirm(true);
     }

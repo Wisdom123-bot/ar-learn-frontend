@@ -32,9 +32,11 @@ interface TimetableEntry {
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+import { useAuthStore } from "@/lib/store";
+
 export default function TimetablePage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -56,16 +58,12 @@ export default function TimetablePage() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    // Fetch school's classes
-    if (t.school_id) {
-      api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    if (teacher.school_id) {
+      api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
         const classes = res.data || [];
         setClasses(classes);
         if (classes.length > 0 && !selectedClass) {
@@ -73,17 +71,17 @@ export default function TimetablePage() {
         }
       }).catch(() => {});
       // Fetch school's teachers
-      api.get(`/schools/${t.school_id}/teachers`).then((res) => {
+      api.get(`/schools/${teacher.school_id}/teachers`).then((res) => {
         const teachers = res.data || [];
         setTeachers(teachers);
         if (!selectedTeacher) {
-          setSelectedTeacher(t.teacher_id);
+          setSelectedTeacher(teacher.teacher_id);
         }
       }).catch(() => {});
       // Fetch subjects
-      api.get("/subjects", { params: { school_id: t.school_id } }).then((res) => setSubjects(res.data || [])).catch(() => {});
+      api.get("/subjects", { params: { school_id: teacher.school_id } }).then((res) => setSubjects(res.data || [])).catch(() => {});
     }
-  }, [router]);
+  }, [teacher, router, selectedClass, selectedTeacher]);
 
   useEffect(() => {
     if (viewType === "class" && !selectedClass) return;

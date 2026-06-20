@@ -7,19 +7,19 @@ import BackButton from "@/components/BackButton";
 
 const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
 
+import { useAuthStore } from "@/lib/store";
+
 export default function AnalyticsHubPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [term, setTerm] = useState("Term 1 2025");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    setTeacher(JSON.parse(stored));
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

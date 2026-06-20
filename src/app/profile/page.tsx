@@ -26,9 +26,11 @@ interface TeacherProfile {
   }[];
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function TeacherProfilePage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -39,15 +41,12 @@ export default function TeacherProfilePage() {
   const [savingPhone, setSavingPhone] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    fetchProfile(t.teacher_id);
-  }, [router]);
+    fetchProfile(teacher.teacher_id);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

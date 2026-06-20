@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/lib/store";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
@@ -25,12 +26,14 @@ interface MLRiskStudent {
   overall_risk: number;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 function RiskContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const classId = searchParams.get("class_id") || "";
 
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [ruleRisks, setRuleRisks] = useState<RiskFlag[]>([]);
   const [mlRisks, setMlRisks] = useState<MLRiskStudent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,15 +43,12 @@ function RiskContent() {
   const [term, setTerm] = useState(searchParams.get("term") || "Term 1 2025");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
 
-    api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
       if (!classId && res.data.length > 0) {
         setSelectedClass(res.data[0].id);
@@ -57,7 +57,7 @@ function RiskContent() {
         fetchRisk(classId, term);
       }
     }).catch(() => setLoading(false));
-  }, [router, classId, term]);
+  }, [router, classId, term, teacher]);
 
   if (!teacher) return null;
 

@@ -10,25 +10,21 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 
+import { useAuthStore } from "@/lib/store";
+
 export default function TeacherAnalyticsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const { user: teacher } = useAuthStore();
   const [term, setTerm] = useState("Term 1 2025");
   const [previousTerm, setPreviousTerm] = useState("Term 3 2024");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    try {
-      setTeacher(TeacherSchema.parse(JSON.parse(stored)));
-    } catch (e) {
-      console.error("Failed to parse teacher from storage", e);
-      router.push("/login");
-    }
-  }, [router]);
+    fetchRankings(teacher.school_id, term);
+  }, [teacher, router, term]);
 
   // TanStack Query for Teacher Analytics
   const { data: analyticsData, isLoading, error, refetch } = useQuery({

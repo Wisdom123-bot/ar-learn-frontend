@@ -96,9 +96,11 @@ function ClassRiskCard({ className, count, router }: { className: string; count:
   );
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function DeanDashboardPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [data, setData] = useState<DeanDashboardData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
   const [loading, setLoading] = useState(true);
@@ -112,19 +114,16 @@ export default function DeanDashboardPage() {
   const [showTimetableModal, setShowTimetableModal] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    if (t.role !== "dean" && t.role !== "headteacher") {
+    if (teacher.role !== "dean" && teacher.role !== "headteacher") {
       router.push("/dashboard");
       return;
     }
-    fetchDashboard(t.school_id, term);
-  }, []);
+    fetchDashboard(teacher.school_id, term);
+  }, [teacher, router, term]);
 
   const fetchDashboard = async (schoolId: string, t: string) => {
     setLoading(true);

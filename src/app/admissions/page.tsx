@@ -10,9 +10,11 @@ interface ClassItem {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function AdmissionsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [tab, setTab] = useState<"student" | "teacher">("student");
   const [message, setMessage] = useState("");
@@ -27,23 +29,20 @@ export default function AdmissionsPage() {
   const [teacherName, setTeacherName] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher" && t.role !== "dean") {
+    if (teacher.role !== "headteacher" && teacher.role !== "dean") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
     // Load classes for student admission
-    api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
       if (res.data.length > 0) setSelectedClass(res.data[0].id);
     });
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 
@@ -62,8 +61,7 @@ export default function AdmissionsPage() {
           full_name: studentName.trim(),
           class_id: selectedClass,
           admission_number: admissionNumber.trim() || undefined,
-        },
-        { headers: { Authorization: `Bearer ${teacher.teacher_id}` } }
+        }
       );
       setMessage(`Student admitted: ${res.data.student.name} (Adm: ${res.data.student.admission_number})`);
       setStudentName("");
@@ -86,8 +84,7 @@ export default function AdmissionsPage() {
     try {
       const res = await api.post(
         "/admissions/teacher",
-        { full_name: teacherName.trim(), role: "teacher" },
-        { headers: { Authorization: `Bearer ${teacher.teacher_id}` } }
+        { full_name: teacherName.trim(), role: "teacher" }
       );
       setMessage(`Teacher admitted: ${res.data.teacher.name} (Code: ${res.data.teacher.teacher_code})`);
       setTeacherName("");

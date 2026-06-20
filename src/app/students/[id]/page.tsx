@@ -5,20 +5,20 @@ import { useRouter, useParams } from "next/navigation";
 import StudentProfileView from "@/components/StudentProfileView";
 import BackButton from "@/components/BackButton";
 
+import { useAuthStore } from "@/lib/store";
+
 export default function StudentProfilePage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [term, setTerm] = useState("Term 1 2025");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    setTeacher(JSON.parse(stored));
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

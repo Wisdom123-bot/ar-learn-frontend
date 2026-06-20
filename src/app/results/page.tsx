@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/lib/store";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
@@ -9,9 +10,11 @@ interface ClassItem {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ReportsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [term, setTerm] = useState("Term 1 2025");
@@ -19,20 +22,17 @@ export default function ReportsPage() {
   const [printingAll, setPrintingAll] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    if (t.school_id) {
-      api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    if (teacher.school_id) {
+      api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
         setClasses(res.data || []);
         if (res.data.length > 0) setSelectedClass(res.data[0].id);
       }).catch(() => {});
     }
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

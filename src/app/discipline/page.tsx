@@ -28,9 +28,11 @@ interface ClassItem {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function DisciplinePage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [schoolId, setSchoolId] = useState("");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -51,22 +53,19 @@ export default function DisciplinePage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    setSchoolId(t.school_id);
+    setSchoolId(teacher.school_id);
     // Fetch classes the teacher is assigned to
-    api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
       if (res.data.length > 0) {
         setSelectedClassId(res.data[0].id);
       }
     }).catch(() => {});
-  }, [router]);
+  }, [teacher, router]);
 
   // Load students when class changes
   useEffect(() => {

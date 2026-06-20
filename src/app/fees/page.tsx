@@ -19,9 +19,11 @@ interface FeeStatus {
   total_paid: number;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function FeesPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [searchAdm, setSearchAdm] = useState("");
   const [feeStudent, setFeeStudent] = useState<FeeStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,13 +36,11 @@ export default function FeesPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    setTeacher(JSON.parse(stored));
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

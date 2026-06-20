@@ -13,30 +13,29 @@ interface Student {
   class_name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function StudentListPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher" && t.role !== "dean") {
+    if (teacher.role !== "headteacher" && teacher.role !== "dean") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
-    api.get(`/students/school/${t.school_id}`)
+    api.get(`/students/school/${teacher.school_id}`)
       .then((res) => setStudents(res.data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

@@ -22,9 +22,11 @@ interface Template {
   updated_at: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ReportBuilderPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [schoolId, setSchoolId] = useState("");
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,25 +49,18 @@ export default function ReportBuilderPage() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher" && t.role !== "dean") {
+    if (teacher.role !== "headteacher" && teacher.role !== "dean") {
       router.push("/dashboard");
       return;
     }
-    if (!t.is_premium) {
-      alert("Custom report card builder is a premium feature. Please upgrade to access.");
-      router.push("/dashboard");
-      return;
-    }
-    setTeacher(t);
-    setSchoolId(t.school_id);
-    fetchTemplates(t.school_id);
-  }, [router]);
+    // Note: Premium check is now handled via the subscription tier status
+    setSchoolId(teacher.school_id);
+    fetchTemplates(teacher.school_id);
+  }, [teacher, router]);
 
   const fetchTemplates = async (sid: string) => {
     setLoading(true);

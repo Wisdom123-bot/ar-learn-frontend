@@ -15,9 +15,11 @@ interface Template {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ReportsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -28,17 +30,14 @@ export default function ReportsPage() {
   const [classSize, setClassSize] = useState<number>(0);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    if (t.school_id) {
+    if (teacher.school_id) {
       Promise.all([
-        api.get(`/schools/${t.school_id}/classes`),
-        api.get(`/report-builder/${t.school_id}`),
+        api.get(`/schools/${teacher.school_id}/classes`),
+        api.get(`/report-builder/${teacher.school_id}`),
       ])
         .then(([classesRes, templatesRes]) => {
           setClasses(classesRes.data || []);
@@ -48,7 +47,7 @@ export default function ReportsPage() {
         })
         .catch(() => {});
     }
-  }, [router]);
+  }, [teacher, router]);
 
   // Fetch class size when selectedClass changes
   useEffect(() => {

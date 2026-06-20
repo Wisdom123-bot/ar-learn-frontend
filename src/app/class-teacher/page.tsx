@@ -35,9 +35,11 @@ interface DashboardData {
   at_risk_students: { name: string; mean: number }[];
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ClassTeacherDashboard() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [data, setData] = useState<DashboardData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
   const [loading, setLoading] = useState(true);
@@ -58,15 +60,12 @@ export default function ClassTeacherDashboard() {
   const [attMessage, setAttMessage] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    fetchDashboard(t.teacher_id, term);
-  }, [router]);
+    fetchDashboard(teacher.teacher_id, term);
+  }, [teacher, router, term]);
 
   if (!teacher) return null;
 

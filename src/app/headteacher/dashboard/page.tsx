@@ -79,9 +79,11 @@ function RiskCard({ group, groupStudents, router }: { group: string; groupStuden
 
 const PremiumCharts = dynamic(() => import("@/components/PremiumCharts"), { ssr: false });
 
+import { useAuthStore } from "@/lib/store";
+
 export default function HeadteacherDashboardPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [schoolId, setSchoolId] = useState("");
   const [term, setTerm] = useState("Term 1 2025");
   const [previousTerm, setPreviousTerm] = useState("Term 3 2024");
@@ -109,22 +111,19 @@ export default function HeadteacherDashboardPage() {
   const [showExportMenu, setShowExportMenu] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher") {
+    if (teacher.role !== "headteacher") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
-    if (t.school_id) {
-      setSchoolId(t.school_id);
-      fetchDashboard(t.school_id, term, previousTerm);
+    if (teacher.school_id) {
+      setSchoolId(teacher.school_id);
+      fetchDashboard(teacher.school_id, term, previousTerm);
     }
-  }, []);
+  }, [teacher, router, term, previousTerm]);
 
   const fetchDashboard = async (sid: string, t: string, pt: string) => {
     setLoading(true);

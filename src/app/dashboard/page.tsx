@@ -185,7 +185,7 @@ export default function DashboardPage() {
           <div id="student-search-container">
             <StudentSearch />
           </div>
-          <NotificationBell schoolId={user.school_id} teacherId={user.teacher_id} />
+          <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
           <Link
             href="/privacy"
             target="_blank"

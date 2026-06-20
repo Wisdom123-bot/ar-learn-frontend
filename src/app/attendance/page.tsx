@@ -25,9 +25,11 @@ interface AttendanceRow {
 
 const PAGE_SIZE = 50;
 
+import { useAuthStore } from "@/lib/store";
+
 export default function AttendancePage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
@@ -39,18 +41,16 @@ export default function AttendancePage() {
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    api.get(`/teachers/${t.teacher_id}/assignments`).then((res) => {
-      setAssignments(res.data);
-      if (res.data.length > 0) setSelectedClassId(res.data[0].class_id);
-    }).catch(console.error);
-  }, [router]);
+    // Fetch classes
+    api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
+      setClasses(res.data || []);
+      if (res.data.length > 0) setSelectedClassId(res.data[0].id);
+    });
+  }, [teacher, router]);
 
   // Fetch students of the selected class directly – no more filtering all students
   useEffect(() => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/lib/store";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import api, { validatedGet } from "@/lib/api";
@@ -17,9 +18,11 @@ interface ResultRow {
 
 const PAGE_SIZE = 50;
 
+import { useAuthStore } from "@/lib/store";
+
 export default function EnterResultsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const { user: teacher } = useAuthStore();
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [results, setResults] = useState<ResultRow[]>([]);
   const [examType, setExamType] = useState("CAT");
@@ -35,18 +38,11 @@ export default function EnterResultsPage() {
   const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    try {
-      setTeacher(TeacherSchema.parse(JSON.parse(stored)));
-    } catch (e) {
-      console.error("Failed to parse teacher from storage", e);
-      router.push("/login");
-    }
-  }, [router]);
+  }, [teacher, router]);
 
   // TanStack Query for Assignments
   const { data: assignments = [] } = useQuery({

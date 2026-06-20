@@ -10,9 +10,11 @@ interface Subject {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ManageSubjectsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [newSubjectName, setNewSubjectName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -21,19 +23,16 @@ export default function ManageSubjectsPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "headteacher" && t.role !== "dean") {
+    if (teacher.role !== "headteacher" && teacher.role !== "dean") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
-    fetchSubjects(t.school_id);
-  }, []);
+    fetchSubjects(teacher.school_id);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

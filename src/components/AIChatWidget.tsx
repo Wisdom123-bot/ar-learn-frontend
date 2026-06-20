@@ -3,12 +3,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import api from "@/lib/api";
 
+import { useAuthStore } from "@/lib/store";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
 export default function AIChatWidget() {
+  const { user: teacher } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -30,18 +33,14 @@ export default function AIChatWidget() {
   }, []);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (stored) {
-      try {
-        const t = JSON.parse(stored);
-        setSchoolId(t.school_id || "");
-        setTeacherId(t.teacher_id || "");
-        setIsLoggedIn(true);
-      } catch {
-        setIsLoggedIn(false);
-      }
+    if (teacher) {
+      setSchoolId(teacher.school_id || "");
+      setTeacherId(teacher.teacher_id || "");
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
-  }, []);
+  }, [teacher]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -110,8 +109,7 @@ export default function AIChatWidget() {
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
-      const user = JSON.parse(localStorage.getItem("teacher") || "{}");
-      const token = user.token;
+      const token = teacher?.token;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai-assistant/ask`, {
         method: "POST",

@@ -14,9 +14,11 @@ interface ClassItem {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ImportStudentsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [schools, setSchools] = useState<School[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedSchool, setSelectedSchool] = useState("");
@@ -27,28 +29,15 @@ export default function ImportStudentsPage() {
   const [useAI, setUseAI] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    setTeacher(t);
-    // Fetch schools (for simplicity, we'll assume we need at least the teacher's school)
-    // In a real admin panel, we'd fetch all schools; for now, just set teacher's school
-    // But we can still load all schools if the teacher is headteacher.
-    // We'll just fetch the teacher's own school and set it as default.
-    if (t.school_id) {
-      setSelectedSchool(t.school_id);
-      fetchClasses(t.school_id);
-      // Also set schools list with at least this school (we can fetch a single school)
-      api.get(`/schools/${t.school_id}`).catch(() => {});
-      // For now, we'll just hardcode or use a generic approach: we'll put a placeholder if needed.
-      // Ideally we'd have a GET /schools endpoint; we'll quickly add one to the backend.
-      // But to keep moving, we'll use a manual list or show a message.
-      // Let's just assume the teacher's school is the only one they can import to.
+    if (teacher.school_id) {
+      setSelectedSchool(teacher.school_id);
+      fetchClasses(teacher.school_id);
     }
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 

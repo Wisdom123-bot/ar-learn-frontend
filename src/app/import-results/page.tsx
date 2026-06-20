@@ -9,9 +9,11 @@ interface ClassItem {
   name: string;
 }
 
+import { useAuthStore } from "@/lib/store";
+
 export default function ImportResultsPage() {
   const router = useRouter();
-  const [teacher, setTeacher] = useState<any>(null);
+  const { user: teacher } = useAuthStore();
   const [schoolId, setSchoolId] = useState("");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -21,23 +23,20 @@ export default function ImportResultsPage() {
   const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("teacher");
-    if (!stored) {
+    if (!teacher) {
       router.push("/login");
       return;
     }
-    const t = JSON.parse(stored);
-    if (t.role !== "dean" && t.role !== "headteacher") {
+    if (teacher.role !== "dean" && teacher.role !== "headteacher") {
       router.push("/dashboard");
       return;
     }
-    setTeacher(t);
-    setSchoolId(t.school_id);
+    setSchoolId(teacher.school_id);
     // Fetch school classes
-    api.get(`/schools/${t.school_id}/classes`).then((res) => {
+    api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
     }).catch(() => {});
-  }, [router]);
+  }, [teacher, router]);
 
   if (!teacher) return null;
 
