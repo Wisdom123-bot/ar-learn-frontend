@@ -8,6 +8,8 @@ export const TeacherSchema = z.object({
   school_name: z.string(),
   token: z.string().optional(),
   is_premium: z.boolean().optional(),
+  slug: z.string().optional(),
+  logo_url: z.string().optional(),
 });
 
 export const StudentSchema = z.object({

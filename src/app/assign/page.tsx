@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 interface TeacherItem {
   id: string;

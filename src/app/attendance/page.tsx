@@ -30,6 +30,7 @@ import { useAuthStore } from "@/lib/store";
 export default function AttendancePage() {
   const router = useRouter();
   const { user: teacher } = useAuthStore();
+  const [classes, setClasses] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);

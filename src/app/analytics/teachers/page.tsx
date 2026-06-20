@@ -23,7 +23,6 @@ export default function TeacherAnalyticsPage() {
       router.push("/login");
       return;
     }
-    fetchRankings(teacher.school_id, term);
   }, [teacher, router, term]);
 
   // TanStack Query for Teacher Analytics

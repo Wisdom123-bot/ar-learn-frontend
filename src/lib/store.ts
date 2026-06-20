@@ -2,13 +2,16 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface User {
-  id: string;
   teacher_id: string;
-  school_id: string;
   name: string;
   role: string;
-  token: string;
-  school_name?: string;
+  school_id: string;
+  school_name: string;
+  token?: string;
+  is_premium?: boolean;
+  slug?: string;
+  logo_url?: string;
+  id?: string;
 }
 
 interface AuthState {
