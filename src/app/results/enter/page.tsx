@@ -18,8 +18,6 @@ interface ResultRow {
 
 const PAGE_SIZE = 50;
 
-import { useAuthStore } from "@/lib/store";
-
 export default function EnterResultsPage() {
   const router = useRouter();
   const { user: teacher } = useAuthStore();

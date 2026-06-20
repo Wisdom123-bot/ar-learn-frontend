@@ -10,8 +10,6 @@ interface ClassItem {
   name: string;
 }
 
-import { useAuthStore } from "@/lib/store";
-
 export default function ReportsPage() {
   const router = useRouter();
   const { user: teacher } = useAuthStore();

@@ -26,8 +26,6 @@ interface MLRiskStudent {
   overall_risk: number;
 }
 
-import { useAuthStore } from "@/lib/store";
-
 function RiskContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
