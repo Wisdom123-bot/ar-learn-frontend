@@ -10,7 +10,7 @@ export function DisciplineScene({ scene }: any) {
           <motion.h3
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="text-5xl font-black text-white italic tracking-tighter"
+            className="text-3xl md:text-5xl font-black text-white italic tracking-tighter"
           >
             Behavior Tracking
           </motion.h3>

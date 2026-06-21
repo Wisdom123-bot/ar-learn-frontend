@@ -4,19 +4,19 @@ import { motion } from 'framer-motion';
 
 export function ReportCardScene({ scene }: any) {
   return (
-    <div className="w-full max-w-4xl bg-white rounded-lg p-16 shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-slate-200 relative overflow-hidden">
+    <div className="w-full max-w-4xl bg-white rounded-lg p-6 md:p-16 shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-slate-200 relative overflow-hidden">
       {/* School Header */}
-      <div className="flex justify-between items-start mb-12 border-b-4 border-blue-600 pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left gap-6 mb-12 border-b-4 border-blue-600 pb-8">
         <div className="space-y-2">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-4xl font-black mb-4"
+            className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-3xl md:text-4xl font-black mb-4 mx-auto md:mx-0"
           >
             A
           </motion.div>
-          <h3 className="text-3xl font-black text-slate-900 tracking-tight">AR-LEARN ACADEMY</h3>
-          <p className="text-blue-600 font-black text-[10px] uppercase tracking-[0.3em]">Knowledge is Power</p>
+          <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">AR-LEARN ACADEMY</h3>
+          <p className="text-blue-600 font-black text-[8px] md:text-[10px] uppercase tracking-[0.3em]">Knowledge is Power</p>
         </div>
         <div className="text-right space-y-1">
           <p className="font-black text-slate-900">STUDENT REPORT CARD</p>

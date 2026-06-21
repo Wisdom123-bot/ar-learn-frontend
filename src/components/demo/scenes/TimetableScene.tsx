@@ -15,13 +15,13 @@ const SUBJECTS = [
 
 export function TimetableScene({ scene }: any) {
   return (
-    <div className="w-full max-w-6xl bg-white rounded-[3rem] p-10 shadow-2xl overflow-hidden border border-slate-100">
-      <div className="flex justify-between items-center mb-10">
+    <div className="w-full max-w-6xl bg-white rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden border border-slate-100">
+      <div className="flex justify-between items-center mb-6 md:mb-10">
         <div className="space-y-1">
           <motion.h3
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="text-3xl font-black text-slate-900"
+            className="text-2xl md:text-3xl font-black text-slate-900"
           >
             Auto-Generated Timetables
           </motion.h3>

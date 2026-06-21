@@ -100,33 +100,36 @@ export default function HomePage() {
                 Empowering Kenyan schools with smart technology. Streamline admissions,
                 track academic performance, and engage parents with our all-in-one cloud solution.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-                <Link
-                  href="/login"
-                  className="w-full sm:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 text-center"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/schools/register"
-                  className="w-full sm:w-auto px-10 py-4 bg-white text-[#1E293B] border-2 border-slate-200 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all hover:border-slate-300 text-center"
-                >
-                  Register School
-                </Link>
-              </div>
-              <div className="pt-2 flex flex-col items-center lg:items-start gap-2">
-                <button
-                  onClick={() => setShowDemo(true)}
-                  className="flex items-center gap-3 text-[#2563EB] font-black uppercase tracking-widest text-sm hover:gap-5 transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-lg shadow-blue-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                  Watch Demo Walkthrough
-                </button>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Experience Ar-Learn in action with a cinematic walkthrough.</p>
+              <div className="pt-2 flex flex-col items-center lg:items-start gap-4">
+                <div className="flex flex-col items-center lg:items-start gap-2">
+                  <button
+                    onClick={() => setShowDemo(true)}
+                    className="flex items-center gap-3 text-[#2563EB] font-black uppercase tracking-widest text-sm hover:gap-5 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-lg shadow-blue-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                    Watch Demo
+                  </button>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Experience Ar-Learn in action with a cinematic walkthrough.</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto px-10 py-4 bg-[#2563EB] text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 text-center"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/schools/register"
+                    className="w-full sm:w-auto px-10 py-4 bg-white text-[#1E293B] border-2 border-slate-200 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all hover:border-slate-300 text-center"
+                  >
+                    Register School
+                  </Link>
+                </div>
               </div>
             </div>
 

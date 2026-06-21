@@ -4,19 +4,19 @@ import { motion } from 'framer-motion';
 
 export function StudentProfileScene({ scene }: any) {
   return (
-    <div className="w-full max-w-5xl bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-100 flex flex-col md:flex-row gap-12 relative overflow-hidden">
+    <div className="w-full max-w-5xl bg-white rounded-[3rem] p-6 md:p-10 shadow-2xl border border-slate-100 flex flex-col md:flex-row gap-8 md:gap-12 relative overflow-hidden">
       {/* Profile Sidebar */}
-      <div className="w-full md:w-72 space-y-8 border-r border-slate-50 pr-8">
-        <div className="flex flex-col items-center text-center space-y-4">
+      <div className="w-full md:w-72 space-y-6 md:space-y-8 md:border-r border-slate-50 md:pr-8">
+        <div className="flex flex-row md:flex-col items-center text-left md:text-center gap-4 md:space-y-4">
            <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-32 h-32 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-inner"
+            className="w-20 h-20 md:w-32 md:h-32 bg-slate-100 rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center text-2xl md:text-4xl shadow-inner"
            >
              👤
            </motion.div>
            <div>
-              <h3 className="text-2xl font-black text-slate-900 leading-tight">John Doe</h3>
+              <h3 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">John Doe</h3>
               <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">ADM: 024/2026</p>
            </div>
         </div>

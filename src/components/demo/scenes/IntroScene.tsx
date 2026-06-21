@@ -17,7 +17,7 @@ export function IntroScene({ scene }: any) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
-        className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-6 leading-none"
+        className="text-4xl md:text-8xl font-black text-white tracking-tighter mb-6 leading-none"
       >
         Ar-Learn
       </motion.h1>

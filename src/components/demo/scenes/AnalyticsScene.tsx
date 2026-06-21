@@ -19,7 +19,7 @@ export function AnalyticsScene({ scene }: any) {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl font-black text-white leading-tight"
+            className="text-3xl md:text-5xl font-black text-white leading-tight"
           >
             Predicting Failure <br />Before it Happens.
           </motion.h3>
@@ -27,7 +27,7 @@ export function AnalyticsScene({ scene }: any) {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-slate-400 text-lg leading-relaxed"
+            className="text-slate-400 text-sm md:text-lg leading-relaxed"
           >
             Our ML model analyzes CAT scores and attendance to flag students who might drop grades this term.
           </motion.p>

@@ -23,21 +23,21 @@ export default function DemoOverlay({
 }: DemoOverlayProps) {
   return (
     <>
-      {/* Cinematic Borders/Letterbox */}
-      <div className="absolute inset-0 pointer-events-none border-[4rem] border-slate-950/20 z-10" />
+      {/* Cinematic Borders/Letterbox - Responsive */}
+      <div className="absolute inset-0 pointer-events-none md:border-[4rem] border-slate-950/20 z-10" />
 
       {/* Top Bar: Scene Info */}
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="absolute top-0 inset-x-0 p-12 flex justify-between items-start z-20 pointer-events-none"
+        className="absolute top-0 inset-x-0 p-6 md:p-12 flex justify-between items-start z-20 pointer-events-none"
       >
         <div className="max-w-xl">
           <motion.h2
             key={scene.title}
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="text-4xl font-black text-white italic tracking-tighter mb-2"
+            className="text-2xl md:text-4xl font-black text-white italic tracking-tighter mb-2"
           >
             {scene.title}
           </motion.h2>
@@ -46,7 +46,7 @@ export default function DemoOverlay({
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-slate-300 font-medium"
+            className="text-sm md:text-lg text-slate-300 font-medium leading-tight"
           >
             {scene.description}
           </motion.p>
