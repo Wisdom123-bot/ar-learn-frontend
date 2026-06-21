@@ -1,23 +1,26 @@
 import { z } from "zod";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const TeacherSchema = z.object({
-  teacher_id: z.string(),
-  name: z.string(),
+  teacher_id: z.string().regex(UUID_REGEX, "Invalid Teacher ID"),
+  name: z.string().min(2).max(100),
   role: z.enum(["headteacher", "dean", "teacher"]),
-  school_id: z.string(),
-  school_name: z.string(),
+  school_id: z.string().regex(UUID_REGEX, "Invalid School ID"),
+  school_name: z.string().min(2).max(100),
   token: z.string().optional(),
   is_premium: z.boolean().optional(),
-  slug: z.string().optional(),
-  logo_url: z.string().optional(),
+  subscription_tier: z.string().optional(),
+  slug: z.string().max(30).optional(),
+  logo_url: z.string().url().max(255).optional().or(z.literal("")),
 });
 
 export const StudentSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  admission_number: z.string(),
-  class_id: z.string(),
-  class_name: z.string(),
+  id: z.string().regex(UUID_REGEX, "Invalid Student ID"),
+  name: z.string().min(2).max(100),
+  admission_number: z.string().min(3).max(20),
+  class_id: z.string().regex(UUID_REGEX, "Invalid Class ID"),
+  class_name: z.string().min(2).max(50),
 });
 
 export const AssignmentSchema = z.object({

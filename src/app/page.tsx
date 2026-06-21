@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import DemoEngine from "@/components/demo/DemoEngine";
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [stats, setStats] = useState({ total_schools: 0, total_students: 0, uptime: 99.9 });
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
+  const [showDemo, setShowDemo] = useState(false);
 
   useEffect(() => {
     api.get("/public/stats")
@@ -111,6 +113,20 @@ export default function HomePage() {
                 >
                   Register School
                 </Link>
+              </div>
+              <div className="pt-2 flex flex-col items-center lg:items-start gap-2">
+                <button
+                  onClick={() => setShowDemo(true)}
+                  className="flex items-center gap-3 text-[#2563EB] font-black uppercase tracking-widest text-sm hover:gap-5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-lg shadow-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  Watch Demo Walkthrough
+                </button>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Experience Ar-Learn in action with a cinematic walkthrough.</p>
               </div>
             </div>
 
@@ -316,6 +332,50 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* ---- Pricing Section ---- */}
+        <section id="pricing" className="py-24 px-6 max-w-7xl mx-auto border-t border-slate-100">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">Simple, Transparent Pricing</h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto">
+              Choose the plan that fits your school's vision. No hidden fees, just clear value per student.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <PricingCard
+              tier="Basic"
+              price="0"
+              description="Essential management for Every Kenyan school."
+              features={["Student Admissions", "Teacher Onboarding", "Attendance Tracking", "Discipline Logs"]}
+              btnText="Get Started for Free"
+              btnHref="/schools/register"
+            />
+            <PricingCard
+              tier="Standard"
+              price="10"
+              period="per student / term"
+              description="Professional branding and advanced operations."
+              isPopular={true}
+              features={["Branded Report Cards", "Auto-Timetabling", "National Rankings", "Parent Messaging"]}
+              btnText="Request Upgrade"
+              btnHref="/contact"
+            />
+            <PricingCard
+              tier="Elite"
+              price="17"
+              period="per student / term"
+              description="The full power of AI and Machine Learning."
+              features={["AI Chat Assistant", "ML Grade Forecasting", "Risk Alerts", "AI Project Grading"]}
+              btnText="Talk to Sales"
+              btnHref="/contact"
+              isElite={true}
+            />
+          </div>
+          <p className="mt-12 text-center text-slate-400 text-sm font-medium">
+            * Standard and Elite plans are billed per term based on your school's total student enrollment.
+          </p>
+        </section>
+
         {/* ---- Footer ---- */}
         <footer className="py-20 px-6 bg-white border-t border-slate-100">
           <div className="max-w-7xl mx-auto">
@@ -337,7 +397,7 @@ export default function HomePage() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 lg:gap-24">
-                <FooterLinkCol title="Product" links={[{label: "Features", href: "/about"}, {label: "Analytics", href: "/about"}, {label: "Pricing", href: "#"}]} />
+                <FooterLinkCol title="Product" links={[{label: "Features", href: "/about"}, {label: "Analytics", href: "/about"}, {label: "Pricing", href: "#pricing"}]} />
                 <FooterLinkCol title="Company" links={[{label: "About Us", href: "/about"}, {label: "Contact", href: "/contact"}, {label: "Privacy", href: "/privacy"}, {label: "Terms", href: "/terms"}]} />
                 <FooterLinkCol title="Support" links={[{label: "Help Center", href: "#"}, {label: "Parent FAQ", href: "#"}, {label: "Status", href: "#"}]} />
               </div>
@@ -354,6 +414,8 @@ export default function HomePage() {
           </div>
         </footer>
       </main>
+
+      {showDemo && <DemoEngine onClose={() => setShowDemo(false)} />}
     </div>
   );
 }
@@ -432,6 +494,43 @@ function FooterLinkCol({ title, links }: any) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function PricingCard({ tier, price, period, description, features, btnText, btnHref, isPopular, isElite }: any) {
+  return (
+    <div className={`relative bg-white rounded-[3rem] p-10 border ${isPopular ? 'border-blue-600 shadow-2xl scale-105 z-10' : 'border-slate-100 shadow-xl'} flex flex-col h-full transition-transform hover:translate-y-[-8px]`}>
+      {isPopular && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+          Most Popular
+        </div>
+      )}
+      <div className="mb-8">
+        <h3 className={`text-2xl font-black uppercase italic tracking-tight ${isElite ? 'text-indigo-600' : 'text-slate-900'}`}>{tier}</h3>
+        <p className="text-slate-400 text-sm font-medium mt-1">{description}</p>
+      </div>
+      <div className="mb-8 flex items-baseline gap-1">
+        <span className="text-xs font-bold text-slate-400 uppercase">KES</span>
+        <span className="text-6xl font-black tracking-tighter text-slate-900">{price}</span>
+        {period && <span className="text-sm font-bold text-slate-400 ml-2">{period}</span>}
+      </div>
+      <ul className="space-y-4 mb-10 flex-1">
+        {features.map((f: string) => (
+          <li key={f} className="flex items-start gap-3 text-sm font-bold text-slate-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            {f}
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={btnHref}
+        className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-center text-sm transition-all ${isPopular ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+      >
+        {btnText}
+      </Link>
     </div>
   );
 }

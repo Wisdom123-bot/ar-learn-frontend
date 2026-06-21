@@ -29,6 +29,7 @@ export default function LeaderboardPage() {
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [term, setTerm] = useState("Term 1 2025");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [optedIn, setOptedIn] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [scope, setScope] = useState<"national" | "county">("national");
@@ -75,13 +76,19 @@ export default function LeaderboardPage() {
 
   const fetchLeaderboard = async (schoolId: string, t: string) => {
     setLoading(true);
+    setError(null);
     try {
       const res = await api.get("/analytics/leaderboard", {
         params: { school_id: schoolId, term: t }
       });
       setData(res.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      if (err.response?.status === 403) {
+        setError("upgrade_required");
+      } else {
+        setError("Failed to load leaderboard. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -148,6 +155,33 @@ export default function LeaderboardPage() {
            <div className="text-center py-20 flex flex-col items-center">
               <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
               <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Aggregating National Data...</p>
+           </div>
+        ) : error === "upgrade_required" ? (
+           <div className="bg-white rounded-[3rem] p-16 text-center shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-500">
+              <div className="h-24 w-24 bg-amber-50 text-amber-500 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-8">💎</div>
+              <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter uppercase italic">Standard Feature</h2>
+              <p className="text-gray-500 font-medium leading-relaxed mb-10 max-w-md mx-auto">
+                 The School Leaderboard is a premium feature reserved for schools on the <b>Standard</b> tier or higher. Upgrade now to see how you rank nationally.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                 <button
+                    onClick={() => router.push("/subscription")}
+                    className="px-10 py-5 bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-blue-700 transition-all shadow-xl hover:shadow-blue-200"
+                 >
+                    View Upgrade Plans
+                 </button>
+                 <button
+                    onClick={() => router.back()}
+                    className="px-10 py-5 bg-gray-100 text-gray-400 rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-gray-200 transition-all"
+                 >
+                    Go Back
+                 </button>
+              </div>
+           </div>
+        ) : error ? (
+           <div className="text-center py-20">
+              <p className="text-red-500 font-bold mb-4">{error}</p>
+              <button onClick={() => fetchLeaderboard(teacher.school_id, term)} className="text-blue-600 font-black uppercase text-xs tracking-widest">Try Again</button>
            </div>
         ) : data && (
            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

@@ -33,7 +33,7 @@ export default function AnalyticsHubPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">Intelligence Suite</span>
-               {teacher.is_premium && <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-widest">Premium Active</span>}
+               {(teacher.subscription_tier === "standard" || teacher.subscription_tier === "elite") && <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-widest">Premium Active</span>}
             </div>
             <h1 className="text-4xl font-black text-gray-900">Analytics Command Center</h1>
             <p className="text-gray-500 font-medium">Data-driven decisions for {teacher.school_name}</p>
@@ -54,7 +54,7 @@ export default function AnalyticsHubPage() {
         </header>
 
         {/* Premium Visualizations */}
-        {teacher.is_premium && (
+        {(teacher.subscription_tier === "standard" || teacher.subscription_tier === "elite") && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
                <div className="h-2 w-2 bg-amber-500 rounded-full animate-pulse"></div>
@@ -89,21 +89,23 @@ export default function AnalyticsHubPage() {
           </div>
 
           {/* Student Risk Analytics */}
-          <div
-            onClick={() => router.push("/risk")}
-            className="group relative bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:border-rose-400 cursor-pointer transition-all hover:shadow-xl"
-          >
-            <div className="h-16 w-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-               🚨
+          {teacher.subscription_tier === "elite" && (
+            <div
+              onClick={() => router.push("/risk")}
+              className="group relative bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:border-rose-400 cursor-pointer transition-all hover:shadow-xl"
+            >
+              <div className="h-16 w-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                 🚨
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Risk Forecasting</h2>
+              <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                AI-driven identification of students vulnerable to academic failure or dropout based on behavioral patterns.
+              </p>
+              <div className="flex items-center text-rose-600 text-xs font-bold uppercase tracking-wider group-hover:gap-2 transition-all">
+                 View Alerts <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+              </div>
             </div>
-            <h2 className="text-2xl font-black text-gray-900 mb-2">Risk Forecasting</h2>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">
-              AI-driven identification of students vulnerable to academic failure or dropout based on behavioral patterns.
-            </p>
-            <div className="flex items-center text-rose-600 text-xs font-bold uppercase tracking-wider group-hover:gap-2 transition-all">
-               View Alerts <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </div>
-          </div>
+          )}
 
           {/* Subject Benchmarking (New Link) */}
           <div

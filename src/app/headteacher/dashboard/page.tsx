@@ -281,12 +281,14 @@ export default function HeadteacherDashboardPage() {
         <div className="flex items-center gap-4">
           <StudentSearch />
           <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
-          <button
-            onClick={() => router.push("/analytics/leaderboard")}
-            className="px-3 py-1.5 text-sm font-black bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition"
-          >
-            🏆 Leaderboard
-          </button>
+          {(teacher.subscription_tier === "standard" || teacher.subscription_tier === "elite") && (
+            <button
+              onClick={() => router.push("/analytics/leaderboard")}
+              className="px-3 py-1.5 text-sm font-black bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition"
+            >
+              🏆 Leaderboard
+            </button>
+          )}
           <Link
             href="/privacy"
             target="_blank"
@@ -436,7 +438,7 @@ export default function HeadteacherDashboardPage() {
                 Balance: <span className="font-bold text-red-600">KES {feeStudent.balance.toLocaleString()}</span>
                 {feeStudent.cleared && <span className="text-green-600 ml-2">(Cleared)</span>}
               </p>
-              {teacher.is_premium && (
+              {teacher.subscription_tier === "elite" && (
                 <button onClick={() => setShowTimetableModal(true)} className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium">
                   🗓️ Auto‑Generate Timetable
                 </button>
@@ -498,7 +500,9 @@ export default function HeadteacherDashboardPage() {
               <div className="absolute top-2 right-2 h-2 w-2 bg-emerald-500 rounded-full"></div>
             </div>
           </div>
-          {teacher.is_premium && <PremiumCharts schoolId={teacher.school_id} term={term} />}
+          {(teacher.subscription_tier === "standard" || teacher.subscription_tier === "elite") && (
+             <PremiumCharts schoolId={teacher.school_id} term={term} />
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <p className="text-xs text-gray-500">Best Class</p>

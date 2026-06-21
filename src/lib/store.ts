@@ -9,6 +9,7 @@ interface User {
   school_name: string;
   token?: string;
   is_premium?: boolean;
+  subscription_tier?: string;
   slug?: string;
   logo_url?: string;
   id?: string;

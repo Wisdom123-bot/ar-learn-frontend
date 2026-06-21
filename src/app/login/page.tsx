@@ -6,6 +6,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import { SchoolSchema, TeacherSchema, type School, type Teacher } from "@/lib/schemas";
 import { useAuthStore } from "@/lib/store";
+import BackButton from "@/components/BackButton";
 
 const ROLES = [
   { value: "headteacher", label: "Headteacher" },
@@ -162,8 +163,11 @@ export default function UnifiedLoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-center text-black mb-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 relative">
+        <div className="absolute top-8 left-8">
+           <BackButton />
+        </div>
+        <h1 className="text-2xl font-black text-center text-gray-900 mb-8 uppercase italic tracking-tight">
           Ar‑Learn Login
         </h1>
 

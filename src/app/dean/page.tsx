@@ -173,12 +173,14 @@ export default function DeanDashboardPage() {
           <div className="flex items-center gap-4">
             <StudentSearch />
             <NotificationBell schoolId={teacher.school_id} teacherId={teacher.teacher_id} />
-          <button
-            onClick={() => router.push("/analytics/leaderboard")}
-            className="px-3 py-1.5 text-sm font-black bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition"
-          >
-            🏆 Leaderboard
-          </button>
+          {(teacher.subscription_tier === "standard" || teacher.subscription_tier === "elite") && (
+            <button
+              onClick={() => router.push("/analytics/leaderboard")}
+              className="px-3 py-1.5 text-sm font-black bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition"
+            >
+              🏆 Leaderboard
+            </button>
+          )}
             {/* Export button */}
             <div className="relative">
               <button
@@ -217,15 +219,15 @@ export default function DeanDashboardPage() {
           >
             Assign Teachers
           </button>
-          {teacher.is_premium && (
-  <button
-    onClick={() => setShowTimetableModal(true)}
-    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
-  >
-    🗓️ Auto‑Generate Timetable
-  </button>
-)}
-{showTimetableModal && (
+          {teacher.subscription_tier === "elite" && (
+            <button
+              onClick={() => setShowTimetableModal(true)}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium"
+            >
+              🗓️ Auto‑Generate Timetable
+            </button>
+          )}
+          {showTimetableModal && (
   <TimetableGeneratorModal
     schoolId={teacher.school_id}
     onClose={() => setShowTimetableModal(false)}
