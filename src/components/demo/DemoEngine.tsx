@@ -87,7 +87,7 @@ export default function DemoEngine({ onClose }: DemoEngineProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-950 overflow-hidden flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-slate-50 overflow-hidden flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={scene.id}
@@ -95,9 +95,21 @@ export default function DemoEngine({ onClose }: DemoEngineProps) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="w-full h-full flex items-center justify-center relative"
+          className="w-full h-full flex flex-col items-center p-4 pt-32 pb-48 overflow-y-auto scrollbar-hide relative"
         >
           {renderScene()}
+
+          {/* Auto-scroll indicator/anchor */}
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="mt-8 flex flex-col items-center opacity-40 md:hidden"
+          >
+            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">Scroll for more</p>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-blue-600">
+               <path d="M7 13l5 5 5-5M7 6l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
         </motion.div>
       </AnimatePresence>
 

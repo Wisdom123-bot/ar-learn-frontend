@@ -37,7 +37,7 @@ export default function DemoOverlay({
             key={scene.title}
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="text-2xl md:text-4xl font-black text-white italic tracking-tighter mb-2"
+            className="text-2xl md:text-4xl font-black text-[#2563EB] italic tracking-tighter mb-2"
           >
             {scene.title}
           </motion.h2>
@@ -46,7 +46,7 @@ export default function DemoOverlay({
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-sm md:text-lg text-slate-300 font-medium leading-tight"
+            className="text-sm md:text-lg text-[#2563EB] font-bold leading-tight bg-white/10 backdrop-blur-sm inline-block px-2 py-1 rounded"
           >
             {scene.description}
           </motion.p>
@@ -54,7 +54,7 @@ export default function DemoOverlay({
 
         <button
           onClick={onClose}
-          className="pointer-events-auto p-3 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
+          className="pointer-events-auto p-3 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-all shadow-lg"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />

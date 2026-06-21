@@ -101,7 +101,7 @@ export default function HomePage() {
                 track academic performance, and engage parents with our all-in-one cloud solution.
               </p>
               <div className="pt-2 flex flex-col items-center lg:items-start gap-4">
-                <div className="flex flex-col items-center lg:items-start gap-2">
+                <div className="flex flex-col items-center lg:items-start gap-2 bg-white/80 backdrop-blur-sm p-4 rounded-3xl border-2 border-white shadow-xl shadow-blue-100/50">
                   <button
                     onClick={() => setShowDemo(true)}
                     className="flex items-center gap-3 text-[#2563EB] font-black uppercase tracking-widest text-sm hover:gap-5 transition-all group"
