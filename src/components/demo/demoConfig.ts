@@ -3,7 +3,7 @@ export interface DemoScene {
   title: string;
   description: string;
   duration: number; // in milliseconds
-  type: 'intro' | 'auth' | 'dashboard' | 'analytics' | 'parent' | 'fees' | 'ai' | 'timetable' | 'report_card' | 'leaderboard' | 'student_profile' | 'discipline';
+  type: 'intro' | 'auth' | 'dashboard' | 'analytics' | 'parent' | 'fees' | 'ai' | 'timetable' | 'report_card' | 'leaderboard' | 'student_profile' | 'discipline' | 'admissions' | 'import' | 'management' | 'report_builder' | 'attendance_live' | 'cbc_competency' | 'cash_flow' | 'value_add' | 'staffing';
 }
 
 export const DEMO_SCENES: DemoScene[] = [
@@ -22,11 +22,32 @@ export const DEMO_SCENES: DemoScene[] = [
     type: 'auth',
   },
   {
+    id: 'admissions',
+    title: 'Effortless Admissions',
+    description: 'Enroll new students in seconds with our optimized onboarding flow.',
+    duration: 5000,
+    type: 'admissions',
+  },
+  {
     id: 'teacher_dashboard',
     title: 'Empowering Educators',
     description: 'One-click attendance, results entry, and class management.',
     duration: 5000,
     type: 'dashboard',
+  },
+  {
+    id: 'attendance_live',
+    title: 'Live Attendance',
+    description: 'One-tap marking with instant SMS notifications to parents.',
+    duration: 5000,
+    type: 'attendance_live',
+  },
+  {
+    id: 'bulk_import',
+    title: 'Bulk Data Power',
+    description: 'Import thousands of records from Excel with smart field mapping.',
+    duration: 5000,
+    type: 'import',
   },
   {
     id: 'student_profile',
@@ -36,11 +57,32 @@ export const DEMO_SCENES: DemoScene[] = [
     type: 'student_profile',
   },
   {
+    id: 'cbc_competency',
+    title: 'CBC Competency Mapping',
+    description: 'Track holistic growth across multiple skills and competencies.',
+    duration: 5000,
+    type: 'cbc_competency',
+  },
+  {
     id: 'discipline_tracking',
     title: 'Behavioral Insights',
     description: 'Track commendations and incidents with real-time parent alerts.',
     duration: 5000,
     type: 'discipline',
+  },
+  {
+    id: 'management_insights',
+    title: 'Executive Oversight',
+    description: 'Headteachers get a birds-eye view of school health and performance.',
+    duration: 5000,
+    type: 'management',
+  },
+  {
+    id: 'cash_flow',
+    title: 'Financial Health',
+    description: 'Real-time visibility into collected fees vs projected revenue.',
+    duration: 5000,
+    type: 'cash_flow',
   },
   {
     id: 'timetable',
@@ -50,6 +92,13 @@ export const DEMO_SCENES: DemoScene[] = [
     type: 'timetable',
   },
   {
+    id: 'staffing_workload',
+    title: 'Staffing & Workload',
+    description: 'Optimize teacher distribution without burnout.',
+    duration: 5000,
+    type: 'staffing',
+  },
+  {
     id: 'report_cards',
     title: 'Professional Documents',
     description: 'Branded report cards with deep performance insights.',
@@ -57,11 +106,25 @@ export const DEMO_SCENES: DemoScene[] = [
     type: 'report_card',
   },
   {
+    id: 'custom_reports',
+    title: 'Customizable Reports',
+    description: 'Design beautiful report cards that reflect your school\'s excellence.',
+    duration: 5000,
+    type: 'report_builder',
+  },
+  {
     id: 'ai_analytics',
     title: 'Predictive Intelligence',
     description: 'Our AI identifies grade trends and student risks weeks in advance.',
     duration: 5000,
     type: 'ai',
+  },
+  {
+    id: 'value_add',
+    title: 'Teacher Value-Add',
+    description: 'Measure impact by comparing entry marks with student growth.',
+    duration: 5000,
+    type: 'value_add',
   },
   {
     id: 'leaderboard',

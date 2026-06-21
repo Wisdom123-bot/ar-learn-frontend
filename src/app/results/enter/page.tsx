@@ -9,6 +9,7 @@ import { TeacherSchema, AssignmentSchema, StudentSchema, type Assignment, type T
 import { z } from "zod";
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useQuery } from "@tanstack/react-query";
+import offlineManager from "@/lib/OfflineManager";
 
 interface ResultRow {
   student_id: string;
@@ -189,11 +190,21 @@ export default function EnterResultsPage() {
       })),
     };
     try {
-      const res = await api.post("/results/submit", payload);
-      setMessage(res.data.message || "Results submitted!");
+      if (navigator.onLine) {
+        const res = await api.post("/results/submit", payload);
+        setMessage(res.data.message || "Results submitted!");
+      } else {
+        await offlineManager.saveAction("results", payload, "/results/submit");
+        setMessage("Working Offline: Results saved locally and will sync when online.");
+      }
     } catch (err: unknown) {
-      const detail = (err as any).response?.data?.detail;
-      setMessage(detail || "Submission failed");
+      if (!navigator.onLine) {
+        await offlineManager.saveAction("results", payload, "/results/submit");
+        setMessage("Working Offline: Results saved locally and will sync when online.");
+      } else {
+        const detail = (err as any).response?.data?.detail;
+        setMessage(detail || "Submission failed");
+      }
     } finally {
       setLoading(false);
     }

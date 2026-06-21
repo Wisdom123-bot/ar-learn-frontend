@@ -17,6 +17,15 @@ import { ReportCardScene } from './scenes/ReportCardScene';
 import { LeaderboardScene } from './scenes/LeaderboardScene';
 import { StudentProfileScene } from './scenes/StudentProfileScene';
 import { DisciplineScene } from './scenes/DisciplineScene';
+import { AdmissionsScene } from './scenes/AdmissionsScene';
+import { ImportScene } from './scenes/ImportScene';
+import { ManagementScene } from './scenes/ManagementScene';
+import { ReportBuilderScene } from './scenes/ReportBuilderScene';
+import { AttendanceLiveScene } from './scenes/AttendanceLiveScene';
+import { CBCCompetencyScene } from './scenes/CBCCompetencyScene';
+import { CashFlowScene } from './scenes/CashFlowScene';
+import { StaffingScene } from './scenes/StaffingScene';
+import { ValueAddScene } from './scenes/ValueAddScene';
 
 interface DemoEngineProps {
   onClose: () => void;
@@ -82,12 +91,21 @@ export default function DemoEngine({ onClose }: DemoEngineProps) {
       case 'leaderboard': return <LeaderboardScene scene={scene} />;
       case 'student_profile': return <StudentProfileScene scene={scene} />;
       case 'discipline': return <DisciplineScene scene={scene} />;
+      case 'admissions': return <AdmissionsScene scene={scene} />;
+      case 'import': return <ImportScene scene={scene} />;
+      case 'management': return <ManagementScene scene={scene} />;
+      case 'report_builder': return <ReportBuilderScene scene={scene} />;
+      case 'attendance_live': return <AttendanceLiveScene scene={scene} />;
+      case 'cbc_competency': return <CBCCompetencyScene scene={scene} />;
+      case 'cash_flow': return <CashFlowScene scene={scene} />;
+      case 'staffing': return <StaffingScene scene={scene} />;
+      case 'value_add': return <ValueAddScene scene={scene} />;
       default: return null;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-50 overflow-hidden flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-slate-950 overflow-hidden flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={scene.id}
@@ -95,7 +113,7 @@ export default function DemoEngine({ onClose }: DemoEngineProps) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="w-full h-full flex flex-col items-center p-4 pt-32 pb-48 overflow-y-auto scrollbar-hide relative"
+          className="w-full h-full flex flex-col items-center p-4 pt-24 md:pt-32 pb-32 md:pb-48 overflow-y-auto scrollbar-hide relative"
         >
           {renderScene()}
 

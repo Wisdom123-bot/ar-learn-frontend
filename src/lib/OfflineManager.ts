@@ -1,66 +1,79 @@
 import api from "./api";
-
-interface OfflineAction {
-  id: string;
-  type: "attendance" | "results";
-  payload: any;
-  timestamp: number;
-}
+import { db, type OfflineAction } from "./db";
 
 class OfflineManager {
-  private queueKey = "ar_learn_offline_queue";
-
   constructor() {
     if (typeof window !== "undefined") {
       window.addEventListener("online", () => this.syncQueue());
+      // Initial sync attempt
+      this.syncQueue();
     }
   }
 
-  public async saveAction(type: OfflineAction["type"], payload: any) {
+  /**
+   * Saves an action to IndexedDB for later synchronization
+   */
+  public async saveAction(
+    type: OfflineAction["type"],
+    payload: any,
+    endpoint: string,
+    method: OfflineAction["method"] = "POST"
+  ) {
     const action: OfflineAction = {
-      id: Math.random().toString(36).substr(2, 9),
       type,
       payload,
+      endpoint,
+      method,
       timestamp: Date.now(),
+      synced: 0
     };
 
-    const queue = this.getQueue();
-    queue.push(action);
-    localStorage.setItem(this.queueKey, JSON.stringify(queue));
+    await db.offlineActions.add(action);
 
-    // Attempt sync if online
-    if (navigator.onLine) {
-      await this.syncQueue();
+    // If online, try to sync immediately
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      this.syncQueue();
     }
   }
 
-  private getQueue(): OfflineAction[] {
-    const stored = localStorage.getItem(this.queueKey);
-    return stored ? JSON.parse(stored) : [];
-  }
-
+  /**
+   * Processes the pending queue in IndexedDB
+   */
   public async syncQueue() {
-    const queue = this.getQueue();
-    if (queue.length === 0) return;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
 
-    console.log(`Syncing ${queue.length} offline actions...`);
-    const remaining: OfflineAction[] = [];
+    const pendingActions = await db.offlineActions
+      .where('synced')
+      .equals(0)
+      .toArray();
 
-    for (const action of queue) {
+    if (pendingActions.length === 0) return;
+
+    console.log(`[OfflineManager] Syncing ${pendingActions.length} actions...`);
+
+    for (const action of pendingActions) {
       try {
-        let endpoint = "";
-        if (action.type === "attendance") endpoint = "/attendance/record";
-        else if (action.type === "results") endpoint = "/results/submit";
+        await api({
+          url: action.endpoint,
+          method: action.method,
+          data: action.payload
+        });
 
-        await api.post(endpoint, action.payload);
-        console.log(`Synced action ${action.id}`);
+        // Mark as synced instead of deleting immediately for history/audit
+        await db.offlineActions.update(action.id!, { synced: 1 });
+        console.log(`[OfflineManager] Synced action ${action.id}`);
       } catch (err) {
-        console.error(`Failed to sync action ${action.id}`, err);
-        remaining.push(action);
+        console.error(`[OfflineManager] Sync failed for ${action.id}`, err);
+        // We leave it as synced: 0 to retry next time
       }
     }
+  }
 
-    localStorage.setItem(this.queueKey, JSON.stringify(remaining));
+  /**
+   * Get count of pending actions for UI indicators
+   */
+  public async getPendingCount() {
+    return await db.offlineActions.where('synced').equals(0).count();
   }
 }
 

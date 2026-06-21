@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 
 export function AnalyticsScene({ scene }: any) {
   return (
-    <div className="w-full max-w-5xl bg-slate-900 rounded-[3.5rem] p-12 shadow-[0_0_100px_rgba(37,99,235,0.2)] border border-slate-800 relative overflow-hidden">
-      <div className="flex flex-col md:flex-row gap-12 items-center">
-        <div className="flex-1 space-y-8">
+    <div className="w-full max-w-5xl bg-slate-900 rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-12 shadow-[0_0_100px_rgba(37,99,235,0.2)] border border-slate-800 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
+        <div className="flex-1 space-y-4 md:space-y-8">
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest"
           >
             <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
             AI Predictive Engine
@@ -19,7 +19,7 @@ export function AnalyticsScene({ scene }: any) {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl md:text-5xl font-black text-white leading-tight"
+            className="text-2xl md:text-5xl font-black text-white leading-tight"
           >
             Predicting Failure <br />Before it Happens.
           </motion.h3>
@@ -38,7 +38,7 @@ export function AnalyticsScene({ scene }: any) {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.6, type: "spring" }}
-            className="bg-slate-800/50 backdrop-blur-xl p-8 rounded-[2.5rem] border border-slate-700 space-y-8"
+            className="bg-slate-800/50 backdrop-blur-xl p-6 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-700 space-y-6 md:space-y-8"
           >
             <div className="flex justify-between items-end">
               <div className="space-y-2">

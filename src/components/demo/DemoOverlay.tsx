@@ -66,12 +66,12 @@ export default function DemoOverlay({
       <motion.div
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="absolute bottom-0 inset-x-0 p-12 flex flex-col gap-8 z-20"
+        className="absolute bottom-0 inset-x-0 p-6 md:p-12 flex flex-col gap-4 md:gap-8 z-20"
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6">
           <button
             onClick={onTogglePlay}
-            className="p-4 bg-white text-slate-950 rounded-2xl font-black shadow-xl hover:scale-110 transition-transform active:scale-95"
+            className="p-3 md:p-4 bg-white text-slate-950 rounded-xl md:rounded-2xl font-black shadow-xl hover:scale-110 transition-transform active:scale-95"
           >
             {isPlaying ? (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">

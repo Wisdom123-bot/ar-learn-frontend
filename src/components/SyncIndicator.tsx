@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getQueueLength } from "@/lib/offlineQueue";
+import offlineManager from "@/lib/OfflineManager";
 
 export default function SyncIndicator() {
   const [queueSize, setQueueLength] = useState(0);
@@ -10,15 +10,16 @@ export default function SyncIndicator() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const update = () => {
-      setQueueLength(getQueueLength());
+    const update = async () => {
+      const count = await offlineManager.getPendingCount();
+      setQueueLength(count);
       setOnline(navigator.onLine);
     };
 
     update();
     window.addEventListener("online", update);
     window.addEventListener("offline", update);
-    const interval = setInterval(update, 3000); // Check queue every 3s
+    const interval = setInterval(update, 3000);
 
     return () => {
       window.removeEventListener("online", update);

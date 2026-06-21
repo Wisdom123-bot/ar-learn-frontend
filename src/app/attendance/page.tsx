@@ -26,6 +26,7 @@ interface AttendanceRow {
 const PAGE_SIZE = 50;
 
 import { useAuthStore } from "@/lib/store";
+import offlineManager from "@/lib/OfflineManager";
 
 export default function AttendancePage() {
   const router = useRouter();
@@ -49,9 +50,9 @@ export default function AttendancePage() {
     // Fetch classes
     api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
       setClasses(res.data || []);
-      if (res.data.length > 0) setSelectedClassId(res.data[0].id);
+      if (res.data.length > 0 && !selectedClassId) setSelectedClassId(res.data[0].id);
     });
-  }, [teacher, router]);
+  }, [teacher, router, selectedClassId]);
 
   // Fetch students of the selected class directly – no more filtering all students
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function AttendancePage() {
     if (!selectedClassId) return;
     setLoading(true);
     setMessage("");
+
     const payload = {
       class_id: selectedClassId,
       recorded_by: teacher?.teacher_id,
@@ -90,11 +92,23 @@ export default function AttendancePage() {
         status: a.status,
       })),
     };
+
     try {
-      const res = await api.post("/attendance/record", payload);
-      setMessage(res.data.message || "Attendance saved");
+      if (navigator.onLine) {
+        const res = await api.post("/attendance/record", payload);
+        setMessage(res.data.message || "Attendance saved");
+      } else {
+        // Use the new IndexedDB Offline Manager
+        await offlineManager.saveAction("attendance", payload, "/attendance/record");
+        setMessage("Working Offline: Changes saved locally and will sync when online.");
+      }
     } catch (err: any) {
-      setMessage(err.response?.data?.detail || "Failed to record attendance");
+      if (!navigator.onLine) {
+         await offlineManager.saveAction("attendance", payload, "/attendance/record");
+         setMessage("Working Offline: Changes saved locally and will sync when online.");
+      } else {
+         setMessage(err.response?.data?.detail || "Failed to record attendance");
+      }
     } finally {
       setLoading(false);
     }
