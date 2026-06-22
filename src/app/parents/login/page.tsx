@@ -36,8 +36,8 @@ export default function ParentLoginPage() {
         access_code: accessCode.trim() || undefined,
       });
 
-      // Store student info for parent dashboard
-      localStorage.setItem("parent", JSON.stringify(res.data));
+      // Store student info in sessionStorage (safer than localStorage for sensitive data)
+      sessionStorage.setItem("parent", JSON.stringify(res.data));
       router.push("/parents/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Login failed. Please check your details.");

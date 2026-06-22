@@ -23,7 +23,7 @@ export default function NotificationBell({
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await api.get("/notifications", {
         params: { school_id: schoolId, teacher_id: teacherId || undefined, limit: 10 },
@@ -33,13 +33,13 @@ export default function NotificationBell({
     } catch (err) {
       // silent
     }
-  };
+  }, [schoolId, teacherId]);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // every 30s
     return () => clearInterval(interval);
-  }, [schoolId, teacherId]);
+  }, [fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     await api.put(`/notifications/${id}/read`);

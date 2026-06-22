@@ -28,6 +28,7 @@ export default function ReportsPage() {
   const [message, setMessage] = useState("");
   const [printingAll, setPrintingAll] = useState(false);
   const [classSize, setClassSize] = useState<number>(0);
+  const [searchAdmission, setSearchAdmission] = useState("");
 
   useEffect(() => {
     if (!teacher) {
@@ -87,22 +88,20 @@ export default function ReportsPage() {
     window.open(buildUrl(`/print/fee/`, studentId), "_blank");
   };
 
-  const printAllReportCards = async () => {
-    if (!selectedClass) return;
-    setPrintingAll(true);
-    try {
-      const res = await api.get(`/classes/${selectedClass}/students`);
-      const classStudents = res.data || [];
-      classStudents.forEach((student: any, index: number) => {
-        setTimeout(() => {
-          window.open(buildUrl(`/print/report/`, student.id), "_blank");
-        }, index * 1000);
-      });
-    } catch (err) {
-      setMessage("Failed to fetch student list.");
-    } finally {
-      setPrintingAll(false);
-    }
+  const handleIndividualAction = (type: "report" | "fee") => {
+    if (!searchAdmission) return;
+    setMessage("");
+    api
+      .get(`/students/by-admission?admission=${encodeURIComponent(searchAdmission)}`)
+      .then((res) => {
+        if (res.data?.id) {
+           if (type === "report") printReportCard(res.data.id);
+           else printFeeStatement(res.data.id);
+        } else {
+           setMessage("Student not found.");
+        }
+      })
+      .catch(() => setMessage("Student not found."));
   };
 
   if (!teacher) return null;
@@ -123,7 +122,7 @@ export default function ReportsPage() {
               type="text"
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border rounded-lg p-2 text-sm text-black"
             />
           </div>
 
@@ -132,7 +131,7 @@ export default function ReportsPage() {
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border rounded-lg p-2 text-sm text-black"
             >
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -147,7 +146,7 @@ export default function ReportsPage() {
             <select
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border rounded-lg p-2 text-sm text-black"
             >
               <option value="">Default</option>
               {templates.map((t) => (
@@ -178,46 +177,23 @@ export default function ReportsPage() {
             <h2 className="font-semibold text-gray-800 mb-2">🖨️ Print Individual</h2>
             <div className="flex gap-2">
               <input
-                id="student-search"
                 type="text"
                 placeholder="Admission number"
-                className="flex-1 border rounded-lg p-2 text-sm"
+                className="flex-1 border rounded-lg p-2 text-sm text-black"
+                value={searchAdmission}
+                onChange={(e) => setSearchAdmission(e.target.value)}
               />
               <button
-                onClick={() => {
-                  const adm = (document.getElementById("student-search") as HTMLInputElement)
-                    ?.value;
-                  if (adm) {
-                    api
-                      .get(`/students/by-admission?admission=${encodeURIComponent(adm)}`)
-                      .then((res) => {
-                        if (res.data?.id) printReportCard(res.data.id);
-                        else setMessage("Student not found.");
-                      })
-                      .catch(() => setMessage("Student not found."));
-                  }
-                }}
+                onClick={() => handleIndividualAction("report")}
                 className="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm"
               >
                 Print Report
               </button>
               <button
-                onClick={() => {
-                  const adm = (document.getElementById("student-search") as HTMLInputElement)
-                    ?.value;
-                  if (adm) {
-                    api
-                      .get(`/students/by-admission?admission=${encodeURIComponent(adm)}`)
-                      .then((res) => {
-                        if (res.data?.id) printFeeStatement(res.data.id);
-                        else setMessage("Student not found.");
-                      })
-                      .catch(() => setMessage("Student not found."));
-                  }
-                }}
+                onClick={() => handleIndividualAction("fee")}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
               >
-                Print Fee Statement
+                Print Fee
               </button>
             </div>
             {message && <p className="text-sm text-red-500 mt-2">{message}</p>}
@@ -225,23 +201,13 @@ export default function ReportsPage() {
 
           <div className="border-t pt-4">
             <h2 className="font-semibold text-gray-800 mb-2">
-              🖨️ Print All Report Cards for Class
+              🖨️ Bulk Printing Note
             </h2>
-            {classSize > 500 ? (
-              <p className="text-sm text-red-600 mb-2">
-                This class has {classSize} students. Printing all individual reports may
-                crash your browser. Please use the <strong>Download Class Reports (ZIP)</strong> button
-                instead to get all PDFs at once, then print from your computer.
-              </p>
-            ) : (
-              <button
-                onClick={printAllReportCards}
-                disabled={printingAll}
-                className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold disabled:opacity-50"
-              >
-                {printingAll ? "Opening..." : "Print All Report Cards"}
-              </button>
-            )}
+            <p className="text-sm text-gray-500 mb-2 leading-relaxed">
+               For security and stability reasons, individual tab-opening for bulk reports is disabled.
+               Please use the <strong>Download ZIP</strong> buttons above to get all documents instantly.
+               The ZIP archive contains ready-to-print PDFs for each student.
+            </p>
           </div>
         </div>
       </div>

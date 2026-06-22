@@ -22,6 +22,18 @@ export default function ManageSubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  const fetchSubjects = async (schoolId: string) => {
+    setLoading(true);
+    try {
+      const res = await api.get("/subjects", { params: { school_id: schoolId } });
+      setSubjects(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch subjects", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!teacher) {
       router.push("/login");
@@ -35,18 +47,6 @@ export default function ManageSubjectsPage() {
   }, [teacher, router]);
 
   if (!teacher) return null;
-
-  const fetchSubjects = async (schoolId: string) => {
-    setLoading(true);
-    try {
-      const res = await api.get("/subjects", { params: { school_id: schoolId } });
-      setSubjects(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch subjects", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();

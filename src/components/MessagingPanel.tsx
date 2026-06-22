@@ -30,22 +30,31 @@ export default function MessagingPanel({
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const fetchConversation = async () => {
+  const fetchConversation = async (signal?: AbortSignal) => {
     try {
       const res = await api.get(`/messages/conversation/${studentId}`, {
         params: { user2: recipientId },
+        signal
       });
       setMessages(res.data || []);
-    } catch (err) {
-      console.error("Failed to load conversation", err);
+    } catch (err: any) {
+      if (err.name !== 'CanceledError') {
+        console.error("Failed to load conversation", err);
+      }
     }
   };
 
   useEffect(() => {
-    fetchConversation();
+    const controller = new AbortController();
+
+    fetchConversation(controller.signal);
     // Poll for new messages every 5 seconds for "real-time" feel without WebSockets
-    const interval = setInterval(fetchConversation, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => fetchConversation(controller.signal), 5000);
+
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   }, [studentId, recipientId]);
 
   useEffect(() => {

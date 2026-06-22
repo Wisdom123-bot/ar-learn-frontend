@@ -16,9 +16,18 @@ export class ArLearnDB extends Dexie {
   constructor() {
     super('ArLearnDB');
     this.version(1).stores({
-      offlineActions: '++id, type, synced, timestamp' // Indexing for faster queries
+      offlineActions: '++id, type, synced, timestamp'
     });
   }
 }
 
-export const db = new ArLearnDB();
+// Lazy initialization to avoid SSR issues
+let dbInstance: ArLearnDB | null = null;
+
+export const getDB = (): ArLearnDB | null => {
+  if (typeof window === 'undefined') return null;
+  if (!dbInstance) {
+    dbInstance = new ArLearnDB();
+  }
+  return dbInstance;
+};

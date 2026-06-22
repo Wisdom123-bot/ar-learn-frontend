@@ -83,9 +83,10 @@ export default function FeesPage() {
       });
       setNewBalance("");
       // Refresh
-      searchFeeStudent();
+      await searchFeeStudent();
     } catch (err: any) {
       setMessage(err.response?.data?.detail || "Failed to update balance");
+    } finally {
       setActionLoading(false);
     }
   };
@@ -104,9 +105,10 @@ export default function FeesPage() {
       setMessage(`Payment recorded. Receipt: ${res.data.receipt_number}`);
       setPaymentAmount("");
       // Refresh
-      searchFeeStudent();
+      await searchFeeStudent();
     } catch (err: any) {
       setMessage(err.response?.data?.detail || "Failed to record payment");
+    } finally {
       setActionLoading(false);
     }
   };

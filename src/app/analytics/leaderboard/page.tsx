@@ -33,48 +33,9 @@ export default function LeaderboardPage() {
   const [optedIn, setOptedIn] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [scope, setScope] = useState<"national" | "county">("national");
+  const [mounted, setMounted] = useState(false);
 
-  const chartData = useMemo(() => {
-    if (!data || !teacher) return [];
-    const list = scope === "national" ? (data.national_top_5 || []) : (data.county_top_5 || []);
-
-    // Ensure current school is in the list for comparison if it's not top 5
-    const results = list.map(s => ({
-       name: s.school_name,
-       mean: s.school_mean,
-       isMe: s.school_id === teacher.school_id
-    }));
-
-    const isMeInTop5 = results.some(r => r.isMe);
-    if (!isMeInTop5) {
-       results.push({
-          name: data.school_name + " (You)",
-          mean: data.school_mean,
-          isMe: true
-       });
-    }
-
-    return results.sort((a,b) => b.mean - a.mean);
-  }, [data, scope, teacher]);
-
-  useEffect(() => {
-    if (!teacher) {
-      router.push("/login");
-      return;
-    }
-
-    const isOptedIn = localStorage.getItem(`leaderboard_optin_${teacher.school_id}`);
-    if (isOptedIn) {
-       setOptedIn(true);
-       fetchLeaderboard(teacher.school_id, term);
-    } else {
-       setShowConfirm(true);
-    }
-  }, []);
-
-  if (!teacher) return null;
-
-  const fetchLeaderboard = async (schoolId: string, t: string) => {
+  const fetchLeaderboard = useCallback(async (schoolId: string, t: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -92,7 +53,30 @@ export default function LeaderboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    if (!teacher) {
+      router.push("/login");
+      return;
+    }
+
+    const isOptedIn = localStorage.getItem(`leaderboard_optin_${teacher.school_id}`);
+    if (isOptedIn) {
+       setOptedIn(true);
+       fetchLeaderboard(teacher.school_id, term);
+    } else {
+       setShowConfirm(true);
+    }
+  }, [teacher, term, fetchLeaderboard, router]);
+
+  if (!mounted || !teacher) return null;
+
+  const chartData = useMemo(() => {
+    if (!data || !teacher) return [];
+    const list = scope === "national" ? (data.national_top_5 || []) : (data.county_top_5 || []);
+    // ...
 
   const handleOptIn = () => {
     localStorage.setItem(`leaderboard_optin_${teacher.school_id}`, "true");

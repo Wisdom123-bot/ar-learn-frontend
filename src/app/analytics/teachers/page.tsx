@@ -232,7 +232,13 @@ export default function TeacherAnalyticsPage() {
                         </td>
                         <td className="p-8 text-center">
                           <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black ${t.value_add !== null && t.value_add >= 0 ? "bg-emerald-500 text-white" : "bg-rose-500 text-white shadow-rose-100"} shadow-lg transition-transform hover:scale-110`}>
-                            {t.value_add !== null && t.value_add > 0 ? "+" : ""}{t.value_add}%
+                            {t.value_add !== null ? (
+                               <>
+                                 {t.value_add > 0 ? "+" : ""}{t.value_add}%
+                               </>
+                            ) : (
+                               "0%"
+                            )}
                           </div>
                         </td>
                         <td className="p-8 text-center">

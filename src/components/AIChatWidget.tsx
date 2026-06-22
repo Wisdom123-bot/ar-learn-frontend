@@ -13,9 +13,6 @@ interface Message {
 export default function AIChatWidget() {
   const { user: teacher } = useAuthStore();
 
-  // Gate: Only show for Elite tier if logged in
-  if (teacher && teacher.subscription_tier !== "elite") return null;
-
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -100,6 +97,10 @@ export default function AIChatWidget() {
       window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [handleMouseMove, handleTouchMove]);
+
+  // Gate: Only show for Elite tier if logged in
+  // Move guard here - after all hooks have run
+  if (teacher && teacher.subscription_tier !== "elite") return null;
 
   const handleSend = async () => {
     const question = input.trim();
