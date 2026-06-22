@@ -76,7 +76,25 @@ export default function LeaderboardPage() {
   const chartData = useMemo(() => {
     if (!data || !teacher) return [];
     const list = scope === "national" ? (data.national_top_5 || []) : (data.county_top_5 || []);
-    // ...
+
+    // Ensure current school is in the list for comparison if it's not top 5
+    const results = list.map(s => ({
+       name: s.school_name,
+       mean: s.school_mean,
+       isMe: s.school_id === teacher.school_id
+    }));
+
+    const isMeInTop5 = results.some(r => r.isMe);
+    if (!isMeInTop5) {
+       results.push({
+          name: data.school_name + " (You)",
+          mean: data.school_mean,
+          isMe: true
+       });
+    }
+
+    return results.sort((a,b) => b.mean - a.mean);
+  }, [data, scope, teacher]);
 
   const handleOptIn = () => {
     localStorage.setItem(`leaderboard_optin_${teacher.school_id}`, "true");
