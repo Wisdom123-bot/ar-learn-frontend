@@ -4,7 +4,7 @@ import { addToQueue, processQueue } from "./offlineQueue";
 import { useAuthStore } from "./store";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://ar-learn-frontend.vercel.app",
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,6 +13,12 @@ const api = axios.create({
 // Request interceptor for API calls
 api.interceptors.request.use(
   (config) => {
+    // If the caller already set an Authorization header (e.g. admin dashboard
+    // passing the token explicitly), respect it and do not overwrite it.
+    if (config.headers.Authorization) {
+      return config;
+    }
+
     if (typeof window !== "undefined") {
       const user = useAuthStore.getState().user;
       if (user && user.token) {
