@@ -194,12 +194,16 @@ export default function EnterResultsPage() {
         const res = await api.post("/results/submit", payload);
         setMessage(res.data.message || "Results submitted!");
       } else {
-        await offlineManager.saveAction("results", payload, "/results/submit");
+        if (offlineManager) {
+          await offlineManager.saveAction("results", payload, "/results/submit");
+        }
         setMessage("Working Offline: Results saved locally and will sync when online.");
       }
     } catch (err: unknown) {
       if (!navigator.onLine) {
-        await offlineManager.saveAction("results", payload, "/results/submit");
+        if (offlineManager) {
+          await offlineManager.saveAction("results", payload, "/results/submit");
+        }
         setMessage("Working Offline: Results saved locally and will sync when online.");
       } else {
         const detail = (err as any).response?.data?.detail;

@@ -4,13 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import BackButton from "@/components/BackButton";
-
-interface Assignment {
-  class_id: string;
-  class_name: string;
-  subject_id: string;
-  subject_name: string;
-}
+import { useAuthStore } from "@/lib/store";
+import offlineManager from "@/lib/OfflineManager";
 
 interface Student {
   id: string;
@@ -23,16 +18,18 @@ interface AttendanceRow {
   status: "Present" | "Absent" | "Sick" | "Suspended";
 }
 
-const PAGE_SIZE = 50;
+interface ClassItem {
+  id: string;
+  name: string;
+}
 
-import { useAuthStore } from "@/lib/store";
-import offlineManager from "@/lib/OfflineManager";
+const PAGE_SIZE = 50;
 
 export default function AttendancePage() {
   const router = useRouter();
   const { user: teacher } = useAuthStore();
-  const [classes, setClasses] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+
+  const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRow[]>([]);
@@ -42,26 +39,33 @@ export default function AttendancePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
+  // FIX 1: removed selectedClassId from deps to prevent infinite loop.
+  // FIX 2: uses functional updater `prev => prev || ...` so it only sets
+  //         the class once and never overwrites a user selection.
   useEffect(() => {
     if (!teacher) {
       router.push("/login");
       return;
     }
-    // Fetch classes
     api.get(`/schools/${teacher.school_id}/classes`).then((res) => {
-      setClasses(res.data || []);
-      if (res.data.length > 0 && !selectedClassId) setSelectedClassId(res.data[0].id);
+      const data: ClassItem[] = res.data || [];
+      setClasses(data);
+      if (data.length > 0) {
+        setSelectedClassId((prev) => prev || data[0].id);
+      }
     });
-  }, [teacher, router, selectedClassId]);
+  }, [teacher, router]);
 
-  // Fetch students of the selected class directly – no more filtering all students
+  // Fetch students whenever the selected class changes
   useEffect(() => {
     if (!selectedClassId) return;
-    api.get(`/classes/${selectedClassId}/students`)
+    api
+      .get(`/classes/${selectedClassId}/students`)
       .then((res) => {
-        setStudents(res.data || []);
+        const data: Student[] = res.data || [];
+        setStudents(data);
         setAttendance(
-          (res.data || []).map((s: any) => ({
+          data.map((s) => ({
             student_id: s.id,
             status: "Present" as const,
           }))
@@ -71,12 +75,16 @@ export default function AttendancePage() {
       .catch(console.error);
   }, [selectedClassId]);
 
-  const handleStatusChange = (studentId: string, status: AttendanceRow["status"]) => {
+  const handleStatusChange = (
+    studentId: string,
+    status: AttendanceRow["status"]
+  ) => {
     setAttendance((prev) =>
       prev.map((a) => (a.student_id === studentId ? { ...a, status } : a))
     );
   };
 
+  // FIX 3: offlineManager null-checked in both branches before calling saveAction.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClassId) return;
@@ -93,21 +101,37 @@ export default function AttendancePage() {
       })),
     };
 
+    const saveOffline = async () => {
+      if (offlineManager) {
+        await offlineManager.saveAction(
+          "attendance",
+          payload,
+          "/attendance/record"
+        );
+        setMessage(
+          "Working Offline: Changes saved locally and will sync when online."
+        );
+      } else {
+        setMessage(
+          "Offline mode unavailable. Please reconnect and try again."
+        );
+      }
+    };
+
     try {
       if (navigator.onLine) {
         const res = await api.post("/attendance/record", payload);
         setMessage(res.data.message || "Attendance saved");
       } else {
-        // Use the new IndexedDB Offline Manager
-        await offlineManager.saveAction("attendance", payload, "/attendance/record");
-        setMessage("Working Offline: Changes saved locally and will sync when online.");
+        await saveOffline();
       }
     } catch (err: any) {
       if (!navigator.onLine) {
-         await offlineManager.saveAction("attendance", payload, "/attendance/record");
-         setMessage("Working Offline: Changes saved locally and will sync when online.");
+        await saveOffline();
       } else {
-         setMessage(err.response?.data?.detail || "Failed to record attendance");
+        setMessage(
+          err.response?.data?.detail || "Failed to record attendance"
+        );
       }
     } finally {
       setLoading(false);
@@ -125,7 +149,7 @@ export default function AttendancePage() {
     );
   }, [students, searchQuery]);
 
-  // Instant lookup map – O(1) instead of O(n)
+  // O(1) lookup map for attendance state
   const attendanceMap = useMemo(() => {
     const map: Record<string, AttendanceRow> = {};
     attendance.forEach((a) => (map[a.student_id] = a));
@@ -135,21 +159,23 @@ export default function AttendancePage() {
   // Pagination
   const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE);
   const startIdx = currentPage * PAGE_SIZE;
-  const paginatedStudents = filteredStudents.slice(startIdx, startIdx + PAGE_SIZE);
+  const paginatedStudents = filteredStudents.slice(
+    startIdx,
+    startIdx + PAGE_SIZE
+  );
 
   const goToPage = (page: number) => {
     if (page >= 0 && page < totalPages) setCurrentPage(page);
   };
 
-  // Reset page if filtered length shrinks
+  // Reset page if filtered results shrink below current page
   useEffect(() => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(Math.max(0, totalPages - 1));
+    if (currentPage >= totalPages && totalPages > 0) {
+      setCurrentPage(totalPages - 1);
     }
   }, [totalPages, currentPage]);
 
   if (!teacher) return null;
-
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 text-black">
@@ -158,24 +184,30 @@ export default function AttendancePage() {
         <h1 className="text-xl font-bold text-black">Take Attendance</h1>
       </div>
 
-      {/* Class & Date selector */}
+      {/* Class, Date & Search */}
       <div className="bg-white p-4 rounded-xl shadow-sm mb-4 space-y-3">
+        {/* FIX 4: was using `assignments` (never populated) — now uses `classes` */}
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Class</label>
+          <label className="block text-sm font-medium text-black mb-1">
+            Class
+          </label>
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
             className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
           >
-            {assignments.map((a) => (
-              <option key={a.class_id} value={a.class_id}>
-                {a.class_name}
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Date</label>
+          <label className="block text-sm font-medium text-black mb-1">
+            Date
+          </label>
           <input
             type="date"
             value={date}
@@ -183,8 +215,11 @@ export default function AttendancePage() {
             className="w-full border border-gray-500 rounded-lg p-2 text-sm text-black"
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Search Student</label>
+          <label className="block text-sm font-medium text-black mb-1">
+            Search Student
+          </label>
           <input
             type="text"
             placeholder="Type name or admission number..."
@@ -201,29 +236,45 @@ export default function AttendancePage() {
       {filteredStudents.length > 0 ? (
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-            <div style={{ maxHeight: "calc(100vh - 400px)", overflowY: "auto" }}>
+            <div
+              style={{
+                maxHeight: "calc(100vh - 400px)",
+                overflowY: "auto",
+              }}
+            >
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 sticky top-0">
                   <tr>
-                    <th className="text-left p-2 font-medium text-black">Student</th>
-                    <th className="w-32 p-2 font-medium text-center text-black">Status</th>
+                    <th className="text-left p-2 font-medium text-black">
+                      Student
+                    </th>
+                    <th className="w-32 p-2 font-medium text-center text-black">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedStudents.map((student) => {
-                    const row = attendanceMap[student.id];   // O(1)
+                    const row = attendanceMap[student.id];
                     if (!row) return null;
                     return (
                       <tr key={student.id} className="border-t">
                         <td className="p-2">
-                          <p className="font-medium text-black">{student.name}</p>
-                          <p className="text-xs text-black">{student.admission_number}</p>
+                          <p className="font-medium text-black">
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-black">
+                            {student.admission_number}
+                          </p>
                         </td>
                         <td className="p-2">
                           <select
                             value={row.status}
                             onChange={(e) =>
-                              handleStatusChange(student.id, e.target.value as any)
+                              handleStatusChange(
+                                student.id,
+                                e.target.value as AttendanceRow["status"]
+                              )
                             }
                             className="w-full border border-gray-500 rounded-lg p-1.5 text-sm text-center text-black"
                           >
@@ -241,7 +292,7 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {/* Pagination Controls */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mb-4">
               <button
@@ -267,7 +318,14 @@ export default function AttendancePage() {
           )}
 
           {message && (
-            <div className={`p-3 rounded-lg mb-4 text-sm ${message.toLowerCase().includes("failed") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+            <div
+              className={`p-3 rounded-lg mb-4 text-sm ${
+                message.toLowerCase().includes("failed") ||
+                message.toLowerCase().includes("unavailable")
+                  ? "bg-red-50 text-red-600"
+                  : "bg-green-50 text-green-600"
+              }`}
+            >
               {message}
             </div>
           )}
@@ -282,7 +340,9 @@ export default function AttendancePage() {
         </form>
       ) : (
         <p className="text-center text-black py-10">
-          {students.length === 0 ? "No students in this class." : "No students match your search."}
+          {students.length === 0
+            ? "No students in this class."
+            : "No students match your search."}
         </p>
       )}
     </div>

@@ -15,7 +15,7 @@ export default function SyncIndicator() {
 
     const update = async () => {
       try {
-        const count = await offlineManager.getPendingCount();
+        const count = await offlineManager!.getPendingCount();
         setQueueLength(count);
         setOnline(navigator.onLine);
       } catch (e) {
