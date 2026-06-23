@@ -18,8 +18,9 @@ export default function AdminLoginPage() {
     setError("");
     try {
       const res = await api.post("/admin/login", { username, password });
-      // Store admin token
-      localStorage.setItem("admin_token", res.data.token);
+      const token = res.data.token;
+      localStorage.setItem("admin_token", token);
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       router.push("/admin/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Login failed");
