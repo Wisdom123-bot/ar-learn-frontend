@@ -17,6 +17,12 @@ api.interceptors.request.use(
       const user = useAuthStore.getState().user;
       if (user && user.token) {
         config.headers.Authorization = `Bearer ${user.token}`;
+      } else {
+        // Fallback for admin panel, which uses its own separate token
+        const adminToken = localStorage.getItem("admin_token");
+        if (adminToken) {
+          config.headers.Authorization = `Bearer ${adminToken}`;
+        }
       }
     }
     return config;
